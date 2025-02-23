@@ -6,5 +6,7 @@ fn main() {
     println!("Which day would you like to run?");
     println!("");
 
+    // just a change
+
     solutions::day_1::solution("./data/full/day_1");
 }
