@@ -34,8 +34,8 @@ impl InputData {
 fn part_1(input: &InputData) {
     let now = Instant::now();
     let mut acc: usize = 0;
-
-    let parsed = input.parse_part_1();
+    let lines = input.input.lines();
+    
 
     println!("Part one: {}", acc);
     println!("Runtime (micros): {}", now.elapsed().as_micros());

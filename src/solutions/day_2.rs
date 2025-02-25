@@ -44,7 +44,8 @@ impl InputData {
     }
 }
 
-fn report_analyzer(mut report: Vec<i8>) -> bool {
+// part one solver
+fn report_analyzer(mut report: Vec<i8>) -> bool { 
     let last = report.len() - 2;
 
     if report[0] - report[1] > 0 {
@@ -65,6 +66,7 @@ fn report_analyzer(mut report: Vec<i8>) -> bool {
     true
 }
 
+// part two solver
 fn dampened_report_analyzer(mut report: Vec<i8>) -> bool {
     let last = report.len() - 2;
     let mut safe = true;

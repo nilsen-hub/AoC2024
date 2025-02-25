@@ -38,7 +38,7 @@ fn main() {
         run_all(day_count);
     }
     day_launcher(&instruction);
-    process::exit(0);
+    //process::exit(0);
 }
 
 fn day_launcher(day: &str) {
@@ -46,7 +46,7 @@ fn day_launcher(day: &str) {
         "1" => solutions::day_1::solution("./data/full/day_1"),
         "2" => solutions::day_2::solution("./data/full/day_2"),
         "3" => solutions::day_3::solution("./data/full/day_3"),
-        _ => println!("{} is either invalid or not yet solved", day),
+        _ => println!("{} is unavliable for some reason", day),
     }
     println!("");
 }
