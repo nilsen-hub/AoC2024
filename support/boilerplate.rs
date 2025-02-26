@@ -1,25 +1,5 @@
 use std::{fs::read_to_string, time::Instant};
 
-pub fn solution(path: &str) {
-    let input = InputData {
-        input: match read_to_string(path) {
-            Ok(file) => file,
-            Err(_) => panic!("File should be here"),
-        },
-    };
-
-    println!("Running day three");
-    println!("");
-
-    println!("Answers:");
-    println!("");
-
-    part_1(&input);
-    println!("");
-    part_2(&input);
-    println!("");
-}
-
 #[derive(Debug, Clone)]
 struct InputData {
     input: String,
@@ -51,6 +31,25 @@ fn part_2(input: &InputData) {
     println!("Runtime (micros): {}", now.elapsed().as_micros());
 }
 
+pub fn solution(path: &str) {
+    let input = InputData {
+        input: match read_to_string(path) {
+            Ok(file) => file,
+            Err(_) => panic!("File should be here"),
+        },
+    };
+
+    println!("Running day three");
+    println!("");
+
+    println!("Answers:");
+    println!("");
+
+    part_1(&input);
+    println!("");
+    part_2(&input);
+    println!("");
+}
 #[cfg(test)]
 mod tests {
     use super::*;
