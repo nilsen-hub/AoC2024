@@ -1,30 +1,132 @@
-use crate::support::field_tools as field;
-use std::{fs::read_to_string, time::Instant};
+use crate::support::field_tools::Point;
+use crate::support::field_tools::{self, Field};
+use std::{fs::read_to_string, str::FromStr, time::Instant};
 
 #[derive(Debug, Clone)]
 struct InputData {
     input: String,
 }
 
-fn part_1(data: &InputData) {
-    let now = Instant::now();
-    let mut acc: usize = 0;
-    let input = data.input.lines().collect::<Vec<&str>>();
-    let field = parse_input(input);
-
-    for (index, line) in field.iter().enumerate() {
-        for (idx, c) in line.iter().enumerate() {
-            if *c == 'X' {
-                acc += find_xmas(&field, index, idx)
-            }
-        }
+impl InputData {
+    fn build_part_one_solver(&self) -> PartOneSolver {
+        let field = match field_tools::Field::from_str(&self.input) {
+            Ok(field) => PartOneSolver {
+                field,
+                directions: vec![
+                    Point::NORTH,
+                    Point::SOUTH,
+                    Point::EAST,
+                    Point::WEST,
+                    Point::NORTH_EAST,
+                    Point::NORTH_WEST,
+                    Point::SOUTH_EAST,
+                    Point::SOUTH_WEST,
+                ],
+            },
+            Err(err) => panic!("Error detected: {}", err),
+        };
+        return field;
     }
 
-    println!("Part one: {}", acc);
+    fn build_part_two_solver(&self) -> PartTwoSolver {
+        let field = match field_tools::Field::from_str(&self.input) {
+            Ok(field) => PartTwoSolver {
+                field,
+                search_directions: vec![
+                    Point::NORTH_EAST,
+                    Point::NORTH_WEST,
+                    Point::SOUTH_EAST,
+                    Point::SOUTH_WEST,
+                ],
+                check_directions: vec![Point::NORTH, Point::SOUTH, Point::EAST, Point::WEST],
+            },
+            Err(err) => panic!("Error detected: {}", err),
+        };
+        return field;
+    }
+}
+struct PartTwoSolver {
+    field: Field,
+    search_directions: Vec<Point>,
+    check_directions: Vec<Point>,
+}
+
+impl PartTwoSolver {
+    fn check_xmas(&self, point: Point) -> bool {
+        false
+    }
+    fn solve(&self) -> usize {
+        let mut acc = 0;
+        acc
+    }
+    fn bound_check(&self, point: &Point, direction: &Point, distance: isize) -> bool {
+        let check = *point + (*direction * (distance, distance));
+        if (0..self.field.width).contains(&check.x) && (0..self.field.height).contains(&check.y) {
+            return true;
+        }
+        false
+    }
+}
+struct PartOneSolver {
+    field: Field,
+    directions: Vec<Point>,
+}
+
+impl PartOneSolver {
+    fn solve(&self) -> u32 {
+        let mut output = 0;
+        for (idy, line) in self.field.field.iter().enumerate() {
+            for (idx, c) in line.iter().enumerate() {
+                if *c == 'X' {
+                    output += self.check_xmas(Point::from(idx as isize, idy as isize));
+                }
+            }
+        }
+        return output;
+    }
+
+    fn check_xmas(&self, point: Point) -> u32 {
+        let mut output = 0;
+        let target = vec!['M', 'A', 'S'];
+        'outer: for direction in &self.directions {
+            let mut explore = point;
+            if !self.bound_check(&point, &direction, target.len() as isize) {
+                continue;
+            }
+            for index in 0..3 as usize {
+                explore += *direction;
+                if self.field.field[explore.y as usize][explore.x as usize] != target[index] {
+                    continue 'outer;
+                }
+            }
+            output += 1;
+        }
+        output
+    }
+
+    fn bound_check(&self, point: &Point, direction: &Point, distance: isize) -> bool {
+        let check = *point + (*direction * (distance, distance));
+        if (0..self.field.width).contains(&check.x) && (0..self.field.height).contains(&check.y) {
+            return true;
+        }
+        false
+    }
+}
+fn part_1(data: &InputData) {
+    let now = Instant::now();
+    let field = data.build_part_one_solver();
+    println!("Part one: {}", field.solve());
     println!("Runtime (micros): {}", now.elapsed().as_micros());
 }
 
 fn part_2(data: &InputData) {
+    let mut acc = 0;
+    let now = Instant::now();
+    let solver = data.build_part_two_solver();
+    println!("Part two: {}", acc);
+    println!("Runtime (micros): {}", now.elapsed().as_micros());
+}
+fn part_2_deprec(data: &InputData) {
     let now = Instant::now();
     let mut acc: usize = 0;
     let input = data.input.lines().collect::<Vec<&str>>();
@@ -102,48 +204,6 @@ fn find_masx(field: &Vec<Vec<char>>, index: usize, idx: usize) -> usize {
     }
 
     acc
-}
-
-fn find_xmas(field: &Vec<Vec<char>>, index: usize, idx: usize) -> usize {
-    let mut output_acc: usize = 0;
-    let north: Vec<(usize, usize)> = vec![(index - 1, idx), (index - 2, idx), (index - 3, idx)];
-    let north_west: Vec<(usize, usize)> = vec![
-        (index - 1, idx + 1),
-        (index - 2, idx + 2),
-        (index - 3, idx + 3),
-    ];
-    let west: Vec<(usize, usize)> = vec![(index, idx + 1), (index, idx + 2), (index, idx + 3)];
-    let south_west: Vec<(usize, usize)> = vec![
-        (index + 1, idx + 1),
-        (index + 2, idx + 2),
-        (index + 3, idx + 3),
-    ];
-    let south: Vec<(usize, usize)> = vec![(index + 1, idx), (index + 2, idx), (index + 3, idx)];
-    let south_east: Vec<(usize, usize)> = vec![
-        (index + 1, idx - 1),
-        (index + 2, idx - 2),
-        (index + 3, idx - 3),
-    ];
-    let east: Vec<(usize, usize)> = vec![(index, idx - 1), (index, idx - 2), (index, idx - 3)];
-    let north_east: Vec<(usize, usize)> = vec![
-        (index - 1, idx - 1),
-        (index - 2, idx - 2),
-        (index - 3, idx - 3),
-    ];
-    let directions: Vec<Vec<(usize, usize)>> = vec![
-        north, north_west, west, south_west, south, south_east, east, north_east,
-    ];
-    for direction in directions {
-        let mut mas: String = String::new();
-        for index in direction {
-            mas.push(field[index.0][index.1]);
-        }
-        if mas == "MAS" {
-            output_acc += 1;
-        }
-    }
-
-    output_acc
 }
 
 fn parse_input(full_data: Vec<&str>) -> Vec<Vec<char>> {

@@ -3,9 +3,9 @@ use std::str::FromStr;
 
 #[derive(Debug, Clone)]
 pub struct Field {
-    field: Vec<Vec<char>>,
-    width: isize,
-    height: isize,
+    pub field: Vec<Vec<char>>,
+    pub width: isize,
+    pub height: isize,
 }
 
 impl FromStr for Field {
@@ -34,8 +34,8 @@ impl FromStr for Field {
 
 #[derive(Debug, Clone, Copy, Eq, Hash, PartialEq)]
 pub struct Point {
-    x: isize,
-    y: isize,
+    pub x: isize,
+    pub y: isize,
 }
 
 impl std::ops::Add<(isize, isize)> for Point {
@@ -45,6 +45,16 @@ impl std::ops::Add<(isize, isize)> for Point {
         Self::Output {
             x: self.x + rhs.0,
             y: self.y + rhs.1,
+        }
+    }
+}
+impl std::ops::Mul<(isize, isize)> for Point {
+    type Output = Point;
+
+    fn mul(self, rhs: (isize, isize)) -> Self::Output {
+        Self::Output {
+            x: self.x * rhs.0,
+            y: self.y * rhs.1,
         }
     }
 }
