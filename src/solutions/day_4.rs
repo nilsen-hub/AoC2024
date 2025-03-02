@@ -52,9 +52,10 @@ struct PartTwoSolver {
 }
 
 impl PartTwoSolver {
-    fn check_xmas(&self, point: Point) -> bool {
+    fn check_xmas(&self, point: &Point) -> bool {
         false
     }
+
     fn solve(&self) -> usize {
         let mut acc = 0;
         acc
@@ -254,4 +255,5 @@ mod tests {
 
     #[test]
     fn valid_analysis() {}
+}
 }
