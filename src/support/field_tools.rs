@@ -1,7 +1,7 @@
 use crate::support::parse_error::ParseError;
 use std::str::FromStr;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct Field {
     pub field: Vec<Vec<char>>,
     pub width: isize,
@@ -32,7 +32,7 @@ impl FromStr for Field {
     }
 }
 
-#[derive(Debug, Clone, Copy, Eq, Hash, PartialEq)]
+#[derive(Debug, Clone, Copy, Eq, Hash, PartialEq, Default)]
 pub struct Point {
     pub x: isize,
     pub y: isize,

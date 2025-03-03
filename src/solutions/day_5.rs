@@ -1,12 +1,12 @@
 use std::{collections::HashMap, fs::read_to_string, time::Instant};
-// 5.2 time to beat 10ms
+
 #[derive(Debug, Clone)]
 struct InputData {
     input: String,
 }
 
 impl InputData {
-    fn parse_part_1(&self) -> Updates {
+    fn parse(&self) -> Updates {
         let mut page_map: HashMap<usize, Vec<usize>> = HashMap::with_capacity(1200);
         let mut orders: Vec<Vec<usize>> = Vec::with_capacity(256);
         let lines = self.input.lines();
@@ -30,8 +30,6 @@ impl InputData {
         }
         return Updates { page_map, orders };
     }
-
-    fn parse_part_2(&self) {}
 }
 #[derive(Debug, Clone)]
 struct Updates {
@@ -39,23 +37,105 @@ struct Updates {
     orders: Vec<Vec<usize>>,
 }
 
+impl Updates {
+    fn solve_part_one(&self) -> usize {
+        let mut acc = 0;
+
+        for order in &self.orders {
+            if self.is_valid(&order) {
+                acc += order[order.len() / 2];
+            }
+        }
+
+        acc
+    }
+
+    fn solve_part_two(&self) -> usize {
+        let mut acc = 0;
+
+        for mut order in self.orders.clone() {
+            if !self.is_valid(&order) {
+                order = self.make_valid(order);
+                acc += order[order.len() / 2];
+            }
+        }
+
+        acc
+    }
+
+    fn make_valid(&self, mut order: Vec<usize>) -> Vec<usize> {
+        let bound = order.len();
+        let mut order_counter = 0;
+
+        loop {
+            if order_counter == bound {
+                if self.is_valid(&order) {
+                    return order;
+                }
+                order_counter = 0;
+                continue;
+            }
+
+            let page = order[order_counter];
+            let map = match self.page_map.get(&page) {
+                Some(out) => out,
+                None => {
+                    order_counter += 1;
+                    continue;
+                }
+            };
+
+            let mut count = order_counter + 1;
+            while count < bound {
+                if map.contains(&order[count]) {
+                    let swap = order[order_counter];
+                    order[order_counter] = order[count];
+                    order[count] = swap;
+
+                    if self.is_valid(&order) {
+                        return order;
+                    }
+
+                    order_counter = 0;
+                    break;
+                }
+                count += 1;
+            }
+            order_counter += 1;
+        }
+    }
+
+    fn is_valid(&self, order: &Vec<usize>) -> bool {
+        for (index, page) in order.iter().enumerate() {
+            let map = match self.page_map.get(page) {
+                Some(out) => out,
+                None => continue,
+            };
+            let mut count = index;
+            while count < order.len() {
+                if map.contains(&order[count]) {
+                    return false;
+                }
+                count += 1;
+            }
+        }
+        true
+    }
+}
+
 fn part_1(input: &InputData) {
     let now = Instant::now();
-    let mut acc: usize = 0;
+    let parsed = input.parse();
 
-    let parsed = input.parse_part_1();
-
-    println!("Part one: {}", acc);
+    println!("Part one: {}", parsed.solve_part_one());
     println!("Runtime (micros): {}", now.elapsed().as_micros());
 }
 
 fn part_2(input: &InputData) {
     let now = Instant::now();
-    let mut acc: usize = 0;
+    let parsed = input.parse();
 
-    let parsed = input.parse_part_2();
-
-    println!("Part two: {}", acc);
+    println!("Part two: {}", parsed.solve_part_two());
     println!("Runtime (micros): {}", now.elapsed().as_micros());
 }
 
