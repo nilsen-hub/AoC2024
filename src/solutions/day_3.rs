@@ -108,11 +108,3 @@ pub fn solution(path: &str) {
     part_2(&input);
     println!("");
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn valid_analysis() {}
-}

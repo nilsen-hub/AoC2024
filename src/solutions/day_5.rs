@@ -1,14 +1,42 @@
-use std::{fs::read_to_string, time::Instant};
-
+use std::{collections::HashMap, fs::read_to_string, time::Instant};
+// 5.2 time to beat 10ms
 #[derive(Debug, Clone)]
 struct InputData {
     input: String,
 }
 
 impl InputData {
-    fn parse_part_1(&self) {}
+    fn parse_part_1(&self) -> Updates {
+        let mut page_map: HashMap<usize, Vec<usize>> = HashMap::with_capacity(1200);
+        let mut orders: Vec<Vec<usize>> = Vec::with_capacity(256);
+        let lines = self.input.lines();
+
+        for line in lines {
+            if line.contains('|') {
+                let rule = line.split('|').collect::<Vec<&str>>();
+                page_map
+                    .entry(rule[1].parse().unwrap())
+                    .and_modify(|e| e.push(rule[0].parse().unwrap()))
+                    .or_insert(vec![rule[0].parse().unwrap()]);
+                continue;
+            }
+            if line.contains(',') {
+                orders.push(
+                    line.split(',')
+                        .map(|val| val.parse().unwrap())
+                        .collect::<Vec<usize>>(),
+                );
+            }
+        }
+        return Updates { page_map, orders };
+    }
 
     fn parse_part_2(&self) {}
+}
+#[derive(Debug, Clone)]
+struct Updates {
+    page_map: HashMap<usize, Vec<usize>>,
+    orders: Vec<Vec<usize>>,
 }
 
 fn part_1(input: &InputData) {
