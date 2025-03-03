@@ -1,5 +1,6 @@
 use crate::support::field_tools::Point;
 use crate::support::field_tools::{self, Field};
+use std::ops::Index;
 use std::{fs::read_to_string, str::FromStr, time::Instant};
 
 #[derive(Debug, Clone)]
@@ -52,13 +53,107 @@ struct PartTwoSolver {
 }
 
 impl PartTwoSolver {
-    fn check_xmas(&self, point: &Point) -> bool {
-        false
+    fn check_xmas(&self, point: Point) -> usize {
+        let mut acc = 0;
+        let target = vec!['A', 'S'];
+        'outer: for (num, direction) in self.search_directions.iter().enumerate() {
+            let mut explore = point;
+            if !self.bound_check(&point, direction, target.len() as isize) {
+                continue;
+            }
+            for index in 0..target.len() {
+                explore += *direction;
+
+                if self.field.field[explore.y as usize][explore.x as usize] != target[index] {
+                    continue 'outer;
+                }
+
+                match num {
+                    0 => {
+                        if self.field.field[(point.y + (Point::NORTH.y * 2)) as usize]
+                            [point.x as usize]
+                            == 'M'
+                            && self.field.field[point.y as usize]
+                                [(point.x + (Point::EAST.x * 2)) as usize]
+                                == 'S'
+                            || self.field.field[(point.y + (Point::NORTH.y * 2)) as usize]
+                                [point.x as usize]
+                                == 'S'
+                                && self.field.field[point.y as usize]
+                                    [(point.x + (Point::EAST.x * 2)) as usize]
+                                    == 'M'
+                        {
+                            acc += 1;
+                        }
+                    }
+                    1 => {
+                        if self.field.field[(point.y + (Point::NORTH.y * 2)) as usize]
+                            [point.x as usize]
+                            == 'M'
+                            && self.field.field[point.y as usize]
+                                [(point.x + (Point::WEST.x * 2)) as usize]
+                                == 'S'
+                            || self.field.field[(point.y + (Point::NORTH.y * 2)) as usize]
+                                [point.x as usize]
+                                == 'S'
+                                && self.field.field[point.y as usize]
+                                    [(point.x + (Point::WEST.x * 2)) as usize]
+                                    == 'M'
+                        {
+                            acc += 1;
+                        }
+                    }
+                    2 => {
+                        if self.field.field[(point.y + (Point::SOUTH.y * 2)) as usize]
+                            [point.x as usize]
+                            == 'M'
+                            && self.field.field[point.y as usize]
+                                [(point.x + (Point::EAST.x * 2)) as usize]
+                                == 'S'
+                            || self.field.field[(point.y + (Point::SOUTH.y * 2)) as usize]
+                                [point.x as usize]
+                                == 'S'
+                                && self.field.field[point.y as usize]
+                                    [(point.x + (Point::EAST.x * 2)) as usize]
+                                    == 'M'
+                        {
+                            acc += 1;
+                        }
+                    }
+                    3 => {
+                        if self.field.field[(point.y + (Point::SOUTH.y * 2)) as usize]
+                            [point.x as usize]
+                            == 'M'
+                            && self.field.field[point.y as usize]
+                                [(point.x + (Point::WEST.x * 2)) as usize]
+                                == 'S'
+                            || self.field.field[(point.y + (Point::SOUTH.y * 2)) as usize]
+                                [point.x as usize]
+                                == 'S'
+                                && self.field.field[point.y as usize]
+                                    [(point.x + (Point::WEST.x * 2)) as usize]
+                                    == 'M'
+                        {
+                            acc += 1;
+                        }
+                    }
+                    _ => panic!("check xmas part two is really messed up"),
+                }
+            }
+        }
+        acc
     }
 
     fn solve(&self) -> usize {
         let mut acc = 0;
-        acc
+        for (idy, line) in self.field.field.iter().enumerate() {
+            for (idx, char) in line.iter().enumerate() {
+                if *char == 'M' {
+                    acc += self.check_xmas(Point::from(idx as isize, idy as isize));
+                }
+            }
+        }
+        acc / 2
     }
     fn bound_check(&self, point: &Point, direction: &Point, distance: isize) -> bool {
         let check = *point + (*direction * (distance, distance));
@@ -94,7 +189,7 @@ impl PartOneSolver {
             if !self.bound_check(&point, &direction, target.len() as isize) {
                 continue;
             }
-            for index in 0..3 as usize {
+            for index in 0..target.len() {
                 explore += *direction;
                 if self.field.field[explore.y as usize][explore.x as usize] != target[index] {
                     continue 'outer;
@@ -121,10 +216,9 @@ fn part_1(data: &InputData) {
 }
 
 fn part_2(data: &InputData) {
-    let mut acc = 0;
     let now = Instant::now();
     let solver = data.build_part_two_solver();
-    println!("Part two: {}", acc);
+    println!("Part two: {}", solver.solve());
     println!("Runtime (micros): {}", now.elapsed().as_micros());
 }
 fn part_2_deprec(data: &InputData) {
@@ -255,5 +349,4 @@ mod tests {
 
     #[test]
     fn valid_analysis() {}
-}
 }
