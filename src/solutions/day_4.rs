@@ -1,6 +1,5 @@
 use crate::support::field_tools::Point;
 use crate::support::field_tools::{self, Field};
-use std::ops::Index;
 use std::{fs::read_to_string, str::FromStr, time::Instant};
 
 #[derive(Debug, Clone)]
