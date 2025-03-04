@@ -32,7 +32,16 @@ impl FromStr for Field {
     }
 }
 
-#[derive(Debug, Clone, Copy, Eq, Hash, PartialEq, Default)]
+impl Field {
+    pub fn is_in_bounds(&self, point: &Point) -> bool {
+        if (0..self.width).contains(&point.x) && (0..self.height).contains(&point.y) {
+            return true;
+        }
+        false
+    }
+}
+
+#[derive(Debug, Clone, Copy, Eq, Hash, PartialEq, Default, PartialOrd, Ord)]
 pub struct Point {
     pub x: isize,
     pub y: isize,
