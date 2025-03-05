@@ -17,9 +17,13 @@ impl InputData {
                 if *char == '^' {
                     let guard = Guard {
                         position: Point::from(idx as isize, idy as isize),
-                        direction: 0,
+                        direction: Dir::default(),
                     };
-                    return Lab { floorplan, guard };
+                    return Lab {
+                        floorplan,
+                        guard,
+                        path_map: Vec::with_capacity(5500),
+                    };
                 }
             }
         }
@@ -31,17 +35,52 @@ impl InputData {
 struct Lab {
     floorplan: Field,
     guard: Guard,
+    path_map: Vec<Point>,
 }
 
+#[derive(Debug, Clone, Default, Hash, Eq, PartialEq)]
+enum Dir {
+    #[default]
+    North,
+    East,
+    South,
+    West,
+}
 impl Lab {
-    fn solve_part_one(&self) -> usize {
-        self.path_recorder().len()
+    fn solve_part_one(&mut self) -> usize {
+        self.path_engine();
+        self.path_map.len()
     }
+
+    fn path_engine(&mut self) {
+        self.path_map.push(self.guard.position);
+        loop {
+            let mut turn = self.find_next_turn();
+            self.path_recorder(&turn);
+            if !self.floorplan.is_in_bounds(&turn) {
+                break;
+            }
+            turn += match self.guard.direction {
+                Dir::North => Point::SOUTH,
+                Dir::East => Point::WEST,
+                Dir::South => Point::NORTH,
+                Dir::West => Point::EAST,
+            };
+            self.guard.position = turn;
+            self.guard.turn();
+        }
+        self.path_map.sort_unstable();
+        self.path_map.dedup();
+    }
+
     fn solve_part_two(&mut self) -> usize {
         let mut acc = 0;
-        let mut path = self.path_recorder();
+        self.path_engine();
+        for path in &self.path_map {
+            //println!("path: {:?}", path);
+        }
         loop {
-            let current = match path.pop() {
+            let current = match self.path_map.pop() {
                 Some(point) => point,
                 None => break,
             };
@@ -53,16 +92,36 @@ impl Lab {
         }
         acc
     }
+    fn find_next_turn(&self) -> Point {
+        let mut next = self.guard.position;
+        loop {
+            next += match self.guard.direction {
+                Dir::North => Point::NORTH,
+                Dir::East => Point::EAST,
+                Dir::South => Point::SOUTH,
+                Dir::West => Point::WEST,
+            };
+            if !self.floorplan.is_in_bounds(&next) {
+                break;
+            }
+            match self.floorplan.field[next.y as usize][next.x as usize] {
+                '.' | '^' => continue,
+                '#' => break,
+                _ => panic!(),
+            };
+        }
+        next
+    }
+
     fn is_infinite(&self) -> bool {
         let mut states: Vec<Guard> = Vec::with_capacity(2000);
         let mut guard = self.guard.clone();
         loop {
             let next = match guard.direction {
-                0 => guard.position + Point::NORTH,
-                1 => guard.position + Point::EAST,
-                2 => guard.position + Point::SOUTH,
-                3 => guard.position + Point::WEST,
-                _ => panic!(),
+                Dir::North => guard.position + Point::NORTH,
+                Dir::East => guard.position + Point::EAST,
+                Dir::South => guard.position + Point::SOUTH,
+                Dir::West => guard.position + Point::WEST,
             };
             if !self.floorplan.is_in_bounds(&next) {
                 return false;
@@ -70,11 +129,7 @@ impl Lab {
             match self.floorplan.field[next.y as usize][next.x as usize] {
                 '.' | '^' => guard.position = next,
                 '#' => {
-                    if guard.direction < 3 {
-                        guard.direction += 1;
-                    } else {
-                        guard.direction = 0;
-                    }
+                    guard.turn();
                     if states.contains(&guard) {
                         break;
                     }
@@ -85,30 +140,38 @@ impl Lab {
         }
         true
     }
-    fn path_recorder(&self) -> Vec<Point> {
+    fn path_recorder(&mut self, pos: &Point) {
+        let mut pos = *pos;
+        loop {
+            if pos == self.guard.position {
+                return;
+            }
+            pos += match self.guard.direction {
+                Dir::North => Point::SOUTH,
+                Dir::East => Point::WEST,
+                Dir::South => Point::NORTH,
+                Dir::West => Point::EAST,
+            };
+            self.path_map.push(pos);
+        }
+    }
+    fn path_recorder_deprec(&self) -> Vec<Point> {
         let mut steps: Vec<Point> = Vec::with_capacity(2000);
         let mut guard = self.guard.clone();
         loop {
             steps.push(guard.position);
             let next = match guard.direction {
-                0 => guard.position + Point::NORTH,
-                1 => guard.position + Point::EAST,
-                2 => guard.position + Point::SOUTH,
-                3 => guard.position + Point::WEST,
-                _ => panic!(),
+                Dir::North => guard.position + Point::NORTH,
+                Dir::East => guard.position + Point::EAST,
+                Dir::South => guard.position + Point::SOUTH,
+                Dir::West => guard.position + Point::WEST,
             };
             if !self.floorplan.is_in_bounds(&next) {
                 break;
             }
             match self.floorplan.field[next.y as usize][next.x as usize] {
                 '.' | '^' => guard.position = next,
-                '#' => {
-                    if guard.direction < 3 {
-                        guard.direction += 1;
-                    } else {
-                        guard.direction = 0;
-                    }
-                }
+                '#' => guard.turn(),
                 _ => panic!(),
             };
         }
@@ -121,12 +184,23 @@ impl Lab {
 #[derive(Debug, Clone, Default, Hash, Eq, PartialEq)]
 struct Guard {
     position: Point,
-    direction: usize,
+    direction: Dir,
+}
+
+impl Guard {
+    fn turn(&mut self) {
+        match self.direction {
+            Dir::North => self.direction = Dir::East,
+            Dir::East => self.direction = Dir::South,
+            Dir::South => self.direction = Dir::West,
+            Dir::West => self.direction = Dir::North,
+        }
+    }
 }
 
 fn part_1(input: &InputData) {
     let now = Instant::now();
-    let parsed = input.parse();
+    let mut parsed = input.parse();
 
     println!("Part one: {}", parsed.solve_part_one());
     println!("Runtime (micros): {}", now.elapsed().as_micros());
