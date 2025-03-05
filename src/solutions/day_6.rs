@@ -60,12 +60,7 @@ impl Lab {
             if !self.floorplan.is_in_bounds(&turn) {
                 break;
             }
-            turn += match self.guard.direction {
-                Dir::North => Point::SOUTH,
-                Dir::East => Point::WEST,
-                Dir::South => Point::NORTH,
-                Dir::West => Point::EAST,
-            };
+            turn = self.set_pos(turn);
             self.guard.position = turn;
             self.guard.turn();
         }
@@ -75,10 +70,11 @@ impl Lab {
 
     fn solve_part_two(&mut self) -> usize {
         let mut acc = 0;
+
+        let guard = self.guard.clone();
         self.path_engine();
-        for path in &self.path_map {
-            //println!("path: {:?}", path);
-        }
+        self.guard = guard.clone();
+
         loop {
             let current = match self.path_map.pop() {
                 Some(point) => point,
@@ -88,10 +84,12 @@ impl Lab {
             if self.is_infinite() {
                 acc += 1;
             }
+            self.guard = guard.clone();
             self.floorplan.field[current.y as usize][current.x as usize] = '.';
         }
         acc
     }
+
     fn find_next_turn(&self) -> Point {
         let mut next = self.guard.position;
         loop {
@@ -112,72 +110,45 @@ impl Lab {
         }
         next
     }
-
-    fn is_infinite(&self) -> bool {
+    fn is_infinite(&mut self) -> bool {
         let mut states: Vec<Guard> = Vec::with_capacity(2000);
-        let mut guard = self.guard.clone();
         loop {
-            let next = match guard.direction {
-                Dir::North => guard.position + Point::NORTH,
-                Dir::East => guard.position + Point::EAST,
-                Dir::South => guard.position + Point::SOUTH,
-                Dir::West => guard.position + Point::WEST,
-            };
-            if !self.floorplan.is_in_bounds(&next) {
+            let mut turn = self.find_next_turn();
+            if !self.floorplan.is_in_bounds(&turn) {
                 return false;
             }
-            match self.floorplan.field[next.y as usize][next.x as usize] {
-                '.' | '^' => guard.position = next,
-                '#' => {
-                    guard.turn();
-                    if states.contains(&guard) {
-                        break;
-                    }
-                    states.push(guard.clone());
-                }
-                _ => panic!(),
-            };
+            turn = self.set_pos(turn);
+            self.guard.position = turn;
+            if states.contains(&self.guard) {
+                break;
+            }
+            states.push(self.guard.clone());
+            self.guard.turn();
         }
         true
     }
+
     fn path_recorder(&mut self, pos: &Point) {
         let mut pos = *pos;
         loop {
             if pos == self.guard.position {
                 return;
             }
-            pos += match self.guard.direction {
+            pos = self.set_pos(pos);
+            self.path_map.push(pos);
+        }
+    }
+
+    fn set_pos(&self, point: Point) -> Point {
+        let output = point
+            + match self.guard.direction {
                 Dir::North => Point::SOUTH,
                 Dir::East => Point::WEST,
                 Dir::South => Point::NORTH,
                 Dir::West => Point::EAST,
             };
-            self.path_map.push(pos);
-        }
-    }
-    fn path_recorder_deprec(&self) -> Vec<Point> {
-        let mut steps: Vec<Point> = Vec::with_capacity(2000);
-        let mut guard = self.guard.clone();
-        loop {
-            steps.push(guard.position);
-            let next = match guard.direction {
-                Dir::North => guard.position + Point::NORTH,
-                Dir::East => guard.position + Point::EAST,
-                Dir::South => guard.position + Point::SOUTH,
-                Dir::West => guard.position + Point::WEST,
-            };
-            if !self.floorplan.is_in_bounds(&next) {
-                break;
-            }
-            match self.floorplan.field[next.y as usize][next.x as usize] {
-                '.' | '^' => guard.position = next,
-                '#' => guard.turn(),
-                _ => panic!(),
-            };
-        }
-        steps.sort_unstable();
-        steps.dedup();
-        steps
+
+        output
     }
 }
 

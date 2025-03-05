@@ -49,6 +49,7 @@ fn day_launcher(day: &str) {
         "4" => solutions::day_4::solution("./data/full/day_4"),
         "5" => solutions::day_5::solution("./data/full/day_5"),
         "6" => solutions::day_6::solution("./data/full/day_6"),
+        "7" => solutions::day_7::solution("./data/full/day_7"),
         _ => println!("{} is unavliable for some reason", day),
     }
     println!("");
