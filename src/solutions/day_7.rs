@@ -39,7 +39,7 @@ pub fn solution(path: &str) {
         },
     };
 
-    println!("Running day three");
+    println!("Running day seven");
     println!("");
 
     println!("Answers:");
