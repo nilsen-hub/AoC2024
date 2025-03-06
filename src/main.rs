@@ -58,7 +58,7 @@ fn day_launcher(data: Vec<&str>, day: &str) {
         5 => solutions::day_5::solution(data[day - 1]),
         6 => solutions::day_6::solution(data[day - 1]),
         7 => solutions::day_7::solution(data[day - 1]),
-        _ => println!("{} is unavliable for some reason", day),
+        _ => println!("{} is unavailable for some reason", day),
     }
     println!("");
 }
