@@ -1,11 +1,8 @@
-use std::{fs::read_to_string, time::Instant};
+use std::time::Instant;
 
-pub fn solution(path: &str) {
+pub fn solution(data: &str) {
     let input = InputData {
-        input: match read_to_string(path) {
-            Ok(file) => file,
-            Err(_) => panic!("File should be here"),
-        },
+        input: data.to_string(),
     };
 
     println!("Running day two");
@@ -45,7 +42,7 @@ impl InputData {
 }
 
 // part one solver
-fn report_analyzer(mut report: Vec<i8>) -> bool { 
+fn report_analyzer(mut report: Vec<i8>) -> bool {
     let last = report.len() - 2;
 
     if report[0] - report[1] > 0 {

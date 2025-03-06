@@ -1,6 +1,6 @@
 use crate::support::field_tools::Point;
 use crate::support::field_tools::{self, Field};
-use std::{fs::read_to_string, str::FromStr, time::Instant};
+use std::{str::FromStr, time::Instant};
 
 #[derive(Debug, Clone)]
 struct InputData {
@@ -30,9 +30,7 @@ impl InputData {
 
     fn build_part_two_solver(&self) -> PartTwoSolver {
         let field = match field_tools::Field::from_str(&self.input) {
-            Ok(field) => PartTwoSolver {
-                field,
-            },
+            Ok(field) => PartTwoSolver { field },
             Err(err) => panic!("Error detected: {}", err),
         };
         return field;
@@ -49,31 +47,40 @@ impl PartTwoSolver {
 
         let pne = point + Point::NORTH_EAST;
         let psw = point + Point::SOUTH_WEST;
-        let forward = (field[pne.y as usize][pne.x as usize], field[psw.y as usize][psw.x as usize]);
+        let forward = (
+            field[pne.y as usize][pne.x as usize],
+            field[psw.y as usize][psw.x as usize],
+        );
 
         match forward {
-            ('M','S') | ('S','M') => (),
+            ('M', 'S') | ('S', 'M') => (),
             _ => return false,
         };
 
         let pnw = point + Point::NORTH_WEST;
         let pse = point + Point::SOUTH_EAST;
-        let backward = (field[pnw.y as usize][pnw.x as usize], field[pse.y as usize][pse.x as usize]);
+        let backward = (
+            field[pnw.y as usize][pnw.x as usize],
+            field[pse.y as usize][pse.x as usize],
+        );
 
         match backward {
-            ('M','S') | ('S','M') => (),
+            ('M', 'S') | ('S', 'M') => (),
             _ => return false,
         };
 
-    true
+        true
     }
 
     fn solve(&self) -> usize {
         let mut acc = 0;
         for (idy, line) in self.field.field.iter().enumerate() {
             for (idx, char) in line.iter().enumerate() {
-                if *char == 'A' && (1..(self.field.width -1)).contains(&(idx as isize)) && (1..(self.field.height -1)).contains(&(idy as isize)){
-                    if self.check_xmas(Point::from(idx as isize, idy as isize)){
+                if *char == 'A'
+                    && (1..(self.field.width - 1)).contains(&(idx as isize))
+                    && (1..(self.field.height - 1)).contains(&(idy as isize))
+                {
+                    if self.check_xmas(Point::from(idx as isize, idy as isize)) {
                         acc += 1;
                     }
                 }
@@ -142,12 +149,9 @@ fn part_2(data: &InputData) {
     println!("Runtime (micros): {}", now.elapsed().as_micros());
 }
 
-pub fn solution(path: &str) {
+pub fn solution(data: &str) {
     let input = InputData {
-        input: match read_to_string(path) {
-            Ok(file) => file,
-            Err(_) => panic!("File should be here"),
-        },
+        input: data.to_string(),
     };
 
     println!("Running day four");

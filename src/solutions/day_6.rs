@@ -1,7 +1,7 @@
 use crate::support::field_tools::Field;
 use crate::support::field_tools::Point;
 use std::str::FromStr;
-use std::{fs::read_to_string, time::Instant};
+use std::time::Instant;
 
 #[derive(Debug, Clone)]
 struct InputData {
@@ -185,12 +185,9 @@ fn part_2(input: &InputData) {
     println!("Runtime (micros): {}", now.elapsed().as_micros());
 }
 
-pub fn solution(path: &str) {
+pub fn solution(data: &str) {
     let input = InputData {
-        input: match read_to_string(path) {
-            Ok(file) => file,
-            Err(_) => panic!("File should be here"),
-        },
+        input: data.to_string(),
     };
 
     println!("Running day six");

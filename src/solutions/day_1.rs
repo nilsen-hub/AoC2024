@@ -1,4 +1,4 @@
-use std::{collections::HashMap, fs::read_to_string, str::FromStr, time::Instant};
+use std::{collections::HashMap, str::FromStr, time::Instant};
 
 pub fn solution(data: &str) {
     println!("Running day one");

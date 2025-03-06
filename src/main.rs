@@ -2,32 +2,30 @@ use aoc2024::solutions;
 use std::{env, fs, io, process};
 fn main() {
     let args: Vec<String> = env::args().collect();
-    let days = fs::read_dir("./data/full/").unwrap();
-    let day_count = days.into_iter().count();
-    let day_1 = include_str!(".././data/full/day_1");
-    let files = match get_files_in_directory("./data/full/") {
-        Ok(files) => files,
+    let data = vec![
+        include_str!(".././data/full/day_1"),
+        include_str!(".././data/full/day_2"),
+        include_str!(".././data/full/day_3"),
+        include_str!(".././data/full/day_4"),
+        include_str!(".././data/full/day_5"),
+        include_str!(".././data/full/day_6"),
+        include_str!(".././data/full/day_7"),
+    ];
 
-        Err(e) => panic!("Error: {}", e),
-    };
-
-    for file in files {
-        println!("file: {}", file);
-    }
     print_header();
 
-    if args.len() > 1 {
-        //if args[1] == "ALL" {
-        //    run_all(day_count);
-        //}
-        day_launcher(&args[1], day_1);
-        process::exit(0);
-    }
+    //if args.len() > 1 {
+    //    //if args[1] == "ALL" {
+    //    //    run_all(day_count);
+    //    //}
+    //    day_launcher(&args[1], day_1);
+    //    process::exit(0);
+    //}
 
     println!("Which day would you like to run?");
     println!(
         "(Enter number from 1 to {}, or type \"ALL\" to run all days)",
-        day_count
+        data.len()
     );
     println!("");
 
@@ -46,19 +44,20 @@ fn main() {
     //if instruction == "ALL" {
     //    run_all(day_count);
     //}
-    day_launcher(&instruction, day_1);
+    day_launcher(data, &instruction);
     //process::exit(0);
 }
 
-fn day_launcher(day: &str, day_1: &str) {
+fn day_launcher(data: Vec<&str>, day: &str) {
+    let day: usize = day.parse().unwrap();
     match day {
-        "1" => solutions::day_1::solution(day_1),
-        "2" => solutions::day_2::solution("./data/full/day_2"),
-        "3" => solutions::day_3::solution("./data/full/day_3"),
-        "4" => solutions::day_4::solution("./data/full/day_4"),
-        "5" => solutions::day_5::solution("./data/full/day_5"),
-        "6" => solutions::day_6::solution("./data/full/day_6"),
-        "7" => solutions::day_7::solution("./data/full/day_7"),
+        1 => solutions::day_1::solution(data[day - 1]),
+        2 => solutions::day_2::solution(data[day - 1]),
+        3 => solutions::day_3::solution(data[day - 1]),
+        4 => solutions::day_4::solution(data[day - 1]),
+        5 => solutions::day_5::solution(data[day - 1]),
+        6 => solutions::day_6::solution(data[day - 1]),
+        7 => solutions::day_7::solution(data[day - 1]),
         _ => println!("{} is unavliable for some reason", day),
     }
     println!("");
