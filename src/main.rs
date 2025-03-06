@@ -1,5 +1,5 @@
 use aoc2024::solutions;
-use std::{env, fs, io, process};
+use std::{env, io, process};
 fn main() {
     let args: Vec<String> = env::args().collect();
     let data = vec![
@@ -14,13 +14,13 @@ fn main() {
 
     print_header();
 
-    //if args.len() > 1 {
-    //    //if args[1] == "ALL" {
-    //    //    run_all(day_count);
-    //    //}
-    //    day_launcher(&args[1], day_1);
-    //    process::exit(0);
-    //}
+    if args.len() > 1 {
+        if args[1] == "ALL" {
+            run_all(data.clone());
+        }
+        day_launcher(data, &args[1]);
+        process::exit(0);
+    }
 
     println!("Which day would you like to run?");
     println!(
@@ -41,11 +41,11 @@ fn main() {
     print!("{esc}c", esc = 27 as char);
 
     print_header();
-    //if instruction == "ALL" {
-    //    run_all(day_count);
-    //}
+    if instruction == "ALL" {
+        run_all(data.clone());
+    }
     day_launcher(data, &instruction);
-    //process::exit(0);
+    process::exit(0);
 }
 
 fn day_launcher(data: Vec<&str>, day: &str) {
@@ -63,33 +63,15 @@ fn day_launcher(data: Vec<&str>, day: &str) {
     println!("");
 }
 
-fn get_files_in_directory(path: &str) -> io::Result<Vec<String>> {
-    // Get a list of all entries in the folder
-    let entries = fs::read_dir(path)?;
+fn run_all(data: Vec<&str>) {
+    let to_send = data.clone();
+    for (index, _day) in data.iter().enumerate() {
+        day_launcher(to_send.clone(), &(index + 1).to_string());
+        println!("");
+    }
 
-    // Extract the filenames from the directory entries and store them in a vector
-    let file_names: Vec<String> = entries
-        .filter_map(|entry| {
-            let path = entry.ok()?.path();
-            if path.is_file() {
-                path.file_name()?.to_str().map(|s| s.to_owned())
-            } else {
-                None
-            }
-        })
-        .collect();
-
-    Ok(file_names)
+    process::exit(0);
 }
-
-//fn run_all(day_count: usize) {
-//    for num in 1..day_count + 1 {
-//        day_launcher(num.to_string().as_str());
-//        println!("");
-//    }
-//
-//    process::exit(0);
-//}
 
 fn print_header() {
     println!("");

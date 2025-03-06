@@ -33,10 +33,7 @@ fn part_2(input: &InputData) {
 
 pub fn solution(path: &str) {
     let input = InputData {
-        input: match read_to_string(path) {
-            Ok(file) => file,
-            Err(_) => panic!("File should be here"),
-        },
+        input: FromStr::from_str(data).unwrap(),
     };
 
     println!("Running day three");

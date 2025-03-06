@@ -1,5 +1,4 @@
-use crate::support::field_tools::Field;
-use crate::support::field_tools::Point;
+use crate::support::field_tools::{Field, Point};
 use std::str::FromStr;
 use std::time::Instant;
 

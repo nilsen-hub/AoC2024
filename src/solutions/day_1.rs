@@ -1,4 +1,4 @@
-use std::{collections::HashMap, str::FromStr, time::Instant};
+use std::{collections::HashMap, time::Instant};
 
 pub fn solution(data: &str) {
     println!("Running day one");
@@ -8,7 +8,7 @@ pub fn solution(data: &str) {
     println!("");
 
     let input = InputData {
-        input: FromStr::from_str(data).unwrap(),
+        input: data.to_string(),
     };
 
     part_1(&input);
