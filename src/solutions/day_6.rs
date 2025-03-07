@@ -189,10 +189,7 @@ pub fn solution(data: &str) {
         input: data.to_string(),
     };
 
-    println!("Running day six");
-    println!("");
-
-    println!("Answers:");
+    println!("Day six answers:");
     println!("");
 
     part_1(&input);

@@ -1,10 +1,7 @@
 use std::{collections::HashMap, time::Instant};
 
 pub fn solution(data: &str) {
-    println!("Running day one");
-    println!("");
-
-    println!("Answers:");
+    println!("Day one answers:");
     println!("");
 
     let input = InputData {

@@ -1,5 +1,6 @@
 use aoc2024::solutions;
 use std::{env, io, process};
+
 fn main() {
     let args: Vec<String> = env::args().collect();
     let data = vec![
@@ -12,40 +13,59 @@ fn main() {
         include_str!(".././data/full/day_7"),
     ];
 
+    clear_terminal();
     print_header();
 
-    if args.len() > 1 {
-        if args[1] == "ALL" {
-            run_all(data.clone());
-        }
-        day_launcher(data, &args[1]);
-        process::exit(0);
+    match args.len() {
+        1 => (),
+        _ => run_command(&data, &args[1]),
     }
 
+    print_intro(data.len());
+    run_command(&data, &get_user_input());
+
+    process::exit(0);
+}
+
+fn run_command(data: &Vec<&str>, command: &str) {
+    clear_terminal();
+    print_header();
+    match command {
+        "ALL" => run_all_days(data.clone()),
+        _ => day_launcher(data.clone(), &command),
+    }
+    process::exit(0);
+}
+
+fn print_intro(len: usize) {
     println!("Which day would you like to run?");
     println!(
         "(Enter number from 1 to {}, or type \"ALL\" to run all days)",
-        data.len()
+        len
     );
     println!("");
+}
 
-    let mut instruction = String::new();
-
-    io::stdin()
-        .read_line(&mut instruction)
-        .expect("Input is missing");
-
-    let len = instruction.len();
-    instruction.truncate(len - 2);
-
-    print!("{esc}c", esc = 27 as char);
-
-    print_header();
-    if instruction == "ALL" {
-        run_all(data.clone());
+fn clear_terminal() {
+    if env::consts::OS == "windows" {
+        std::process::Command::new("cmd")
+            .args(&["/c", "cls"])
+            .spawn()
+            .expect("cls command failed to start")
+            .wait()
+            .expect("failed to wait");
+    } else {
+        std::process::Command::new("clear").status().unwrap();
     }
-    day_launcher(data, &instruction);
-    process::exit(0);
+}
+
+fn get_user_input() -> String {
+    let mut input = String::new();
+
+    io::stdin().read_line(&mut input).expect("Input is missing");
+
+    input.truncate(input.len() - 2);
+    input
 }
 
 fn day_launcher(data: Vec<&str>, day: &str) {
@@ -63,7 +83,7 @@ fn day_launcher(data: Vec<&str>, day: &str) {
     println!("");
 }
 
-fn run_all(data: Vec<&str>) {
+fn run_all_days(data: Vec<&str>) {
     let to_send = data.clone();
     for (index, _day) in data.iter().enumerate() {
         day_launcher(to_send.clone(), &(index + 1).to_string());

@@ -1,4 +1,4 @@
-use std::{fs::read_to_string, time::Instant};
+use std::time::Instant;
 
 #[derive(Debug, Clone)]
 struct InputData {
@@ -36,10 +36,7 @@ pub fn solution(path: &str) {
         input: FromStr::from_str(data).unwrap(),
     };
 
-    println!("Running day three");
-    println!("");
-
-    println!("Answers:");
+    println!("Day REPLACE answers:");
     println!("");
 
     part_1(&input);

@@ -5,10 +5,7 @@ pub fn solution(data: &str) {
         input: data.to_string(),
     };
 
-    println!("Running day two");
-    println!("");
-
-    println!("Answers:");
+    println!("Day two answers:");
     println!("");
 
     part_1(&input);
