@@ -36,7 +36,7 @@ pub fn solution(data: &str) {
         input: data.to_string(),
     };
 
-    println!("Day REPLACE answers:");
+    println!("Day eight answers:");
     println!("");
 
     part_1(&input);

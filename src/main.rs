@@ -11,6 +11,7 @@ fn main() {
         include_str!(".././data/full/day_5"),
         include_str!(".././data/full/day_6"),
         include_str!(".././data/full/day_7"),
+        include_str!(".././data/full/day_8"),
     ];
 
     clear_terminal();
@@ -78,6 +79,7 @@ fn day_launcher(data: Vec<&str>, day: &str) {
         5 => solutions::day_5::solution(data[day - 1]),
         6 => solutions::day_6::solution(data[day - 1]),
         7 => solutions::day_7::solution(data[day - 1]),
+        8 => solutions::day_8::solution(data[day - 1]),
         _ => println!("{} is unavailable for some reason", day),
     }
     println!("");
