@@ -80,7 +80,7 @@ impl PartTwoSolver {
                     && (1..(self.field.width - 1)).contains(&(idx as isize))
                     && (1..(self.field.height - 1)).contains(&(idy as isize))
                 {
-                    if self.check_xmas(Point::from(idx as isize, idy as isize)) {
+                    if self.check_xmas(Point::from((idx, idy))) {
                         acc += 1;
                     }
                 }
@@ -101,7 +101,7 @@ impl PartOneSolver {
         for (idy, line) in self.field.field.iter().enumerate() {
             for (idx, c) in line.iter().enumerate() {
                 if *c == 'X' {
-                    output += self.check_xmas(Point::from(idx as isize, idy as isize));
+                    output += self.check_xmas(Point::from((idx, idy)));
                 }
             }
         }

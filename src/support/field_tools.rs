@@ -57,6 +57,7 @@ impl std::ops::Add<(isize, isize)> for Point {
         }
     }
 }
+
 impl std::ops::Mul<(isize, isize)> for Point {
     type Output = Point;
 
@@ -67,6 +68,7 @@ impl std::ops::Mul<(isize, isize)> for Point {
         }
     }
 }
+
 impl std::ops::Sub<(isize, isize)> for Point {
     type Output = Point;
 
@@ -77,6 +79,7 @@ impl std::ops::Sub<(isize, isize)> for Point {
         }
     }
 }
+
 impl std::ops::Add<Point> for Point {
     type Output = Point;
 
@@ -87,6 +90,7 @@ impl std::ops::Add<Point> for Point {
         }
     }
 }
+
 impl std::ops::Sub<Point> for Point {
     type Output = Point;
 
@@ -116,6 +120,24 @@ impl std::ops::AddAssign<Point> for Point {
     }
 }
 
+impl From<(usize, usize)> for Point {
+    fn from(value: (usize, usize)) -> Self {
+        Point {
+            x: value.0 as isize,
+            y: value.1 as isize,
+        }
+    }
+}
+
+impl From<(isize, isize)> for Point {
+    fn from(value: (isize, isize)) -> Self {
+        Point {
+            x: value.0 as isize,
+            y: value.1 as isize,
+        }
+    }
+}
+
 impl Point {
     pub const NORTH: Point = Point { x: 0, y: -1 };
     pub const SOUTH: Point = Point { x: 0, y: 1 };
@@ -126,7 +148,7 @@ impl Point {
     pub const SOUTH_WEST: Point = Point { x: -1, y: 1 };
     pub const SOUTH_EAST: Point = Point { x: 1, y: 1 };
 
-    pub fn from(t0: isize, t1: isize) -> Point {
-        return Point { x: t0, y: t1 };
-    }
+    //pub fn from(t0: isize, t1: isize) -> Point {
+    //    return Point { x: t0, y: t1 };
+    //}
 }

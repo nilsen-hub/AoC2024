@@ -15,7 +15,7 @@ impl InputData {
             for (idx, char) in line.iter().enumerate() {
                 if *char == '^' {
                     let guard = Guard {
-                        position: Point::from(idx as isize, idy as isize),
+                        position: Point::from((idx, idy)),
                         direction: Dir::default(),
                     };
                     return Lab {
