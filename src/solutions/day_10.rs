@@ -93,7 +93,6 @@ impl TrailMap {
 
 fn part_1(input: &InputData) {
     let now = Instant::now();
-
     let map = input.parse();
 
     println!("Part one: {}", map.solve_part_1());
