@@ -11,7 +11,7 @@ struct InputData {
 }
 
 impl InputData {
-    fn parse_part_1(&self) -> Farm {
+    fn parse(&self) -> Farm {
         let field = Field::from_str(&self.input).unwrap();
         let mut farm = Farm::default();
         farm.field = field;
@@ -295,7 +295,7 @@ struct Plot {
 
 fn part_1(input: &InputData) {
     let now = Instant::now();
-    let mut farm = input.parse_part_1();
+    let mut farm = input.parse();
 
     println!("Part one: {}", farm.solve_part_1());
     println!("Runtime (micros): {}", now.elapsed().as_micros());
@@ -303,7 +303,7 @@ fn part_1(input: &InputData) {
 
 fn part_2(input: &InputData) {
     let now = Instant::now();
-    let mut farm = input.parse_part_1();
+    let mut farm = input.parse();
 
     println!("Part two: {}", farm.solve_part_2());
     println!("Runtime (micros): {}", now.elapsed().as_micros());
@@ -321,11 +321,4 @@ pub fn solution(data: &str) {
     println!("");
     part_2(&input);
     println!("");
-}
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn valid_analysis() {}
 }
