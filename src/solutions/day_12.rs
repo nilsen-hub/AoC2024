@@ -101,7 +101,7 @@ impl Farm {
                                 1 => plot.fences[index] = true,
                                 2 => plot.fences[index] = true,
                                 3 => plot.fences[index] = true,
-                                _ => panic!("Something in map_region really messed up"),
+                                _ => panic!("Something in map_region_2 really messed up"),
                             }
                         }
                     }
@@ -112,7 +112,7 @@ impl Farm {
                             1 => plot.fences[index] = true,
                             2 => plot.fences[index] = true,
                             3 => plot.fences[index] = true,
-                            _ => panic!("Something in map_region really messed up"),
+                            _ => panic!("Something in map_region_2 really messed up"),
                         }
                     }
                 }
