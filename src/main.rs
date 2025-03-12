@@ -1,4 +1,4 @@
-use aoc2024::solutions;
+use aoc2024::{solutions, support::aoc_qol::clear_terminal};
 use std::{env, io, process, time::Instant};
 
 fn main() {
@@ -51,19 +51,6 @@ fn print_intro(len: usize) {
         len
     );
     println!("");
-}
-
-fn clear_terminal() {
-    if env::consts::OS == "windows" {
-        std::process::Command::new("cmd")
-            .args(&["/c", "cls"])
-            .spawn()
-            .expect("cls command failed to start")
-            .wait()
-            .expect("failed to wait");
-    } else {
-        std::process::Command::new("clear").status().unwrap();
-    }
 }
 
 fn get_user_input() -> String {
