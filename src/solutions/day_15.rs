@@ -6,7 +6,23 @@ struct InputData {
 }
 
 impl InputData {
-    fn parse_part_1(&self) {}
+    fn parse_part_1(&self) {
+        let mut field_string: String = String::default();
+        let mut directions = "placeholder";
+        for line in self.input.lines() {
+            match &line[0..1] {
+                "#" => field_string.push_str(line),
+                "<" | ">" | "v" | "^" => directions = line,
+                _ => continue,
+            }
+        }
+
+        for line in field_string.lines() {
+            println!("{}", line);
+        }
+        println!("");
+        println!("{}", directions);
+    }
 
     fn parse_part_2(&self) {}
 }
