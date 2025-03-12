@@ -8,6 +8,10 @@ struct Bathroom {
     robots: Vec<Robot>,
 }
 
+impl Bathroom {
+    // fn place_robot()
+}
+
 #[derive(Debug, Clone, Default)]
 struct Robot {
     pos: Point,
@@ -72,7 +76,6 @@ impl InputData {
             robots.push(self.build_robot(line));
         }
     }
-
     fn build_robot(&self, line: &str) -> Robot {
         let split = line.split_whitespace().collect::<Vec<&str>>();
 
