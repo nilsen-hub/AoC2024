@@ -195,6 +195,15 @@ impl From<(isize, isize)> for Point {
     }
 }
 
+impl From<(i32, i32)> for Point {
+    fn from(value: (i32, i32)) -> Self {
+        Point {
+            x: value.0 as isize,
+            y: value.1 as isize,
+        }
+    }
+}
+
 impl Point {
     pub const NORTH: Point = Point { x: 0, y: -1 };
     pub const SOUTH: Point = Point { x: 0, y: 1 };

@@ -1,5 +1,5 @@
 use aoc2024::solutions;
-use std::{env, io, process};
+use std::{env, io, process, time::Instant};
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -17,6 +17,7 @@ fn main() {
         include_str!(".././data/full/day_11"),
         include_str!(".././data/full/day_12"),
         include_str!(".././data/full/day_13"),
+        include_str!(".././data/full/day_14"),
     ];
 
     clear_terminal();
@@ -90,6 +91,7 @@ fn day_launcher(data: Vec<&str>, day: &str) {
         11 => solutions::day_11::solution(data[day - 1]),
         12 => solutions::day_12::solution(data[day - 1]),
         13 => solutions::day_13::solution(data[day - 1]),
+        14 => solutions::day_14::solution(data[day - 1]),
         _ => println!("{} is unavailable for some reason", day),
     }
     println!("");
