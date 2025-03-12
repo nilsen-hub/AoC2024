@@ -1,5 +1,5 @@
 use crate::support::{
-    aoc_qol::clear_terminal,
+    //aoc_qol::clear_terminal,
     field_tools::{Field, Point},
 };
 use std::time::Instant;
