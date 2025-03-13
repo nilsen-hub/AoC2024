@@ -199,8 +199,4 @@ impl Point {
     pub const NORTH_EAST: Point = Point { x: 1, y: -1 };
     pub const SOUTH_WEST: Point = Point { x: -1, y: 1 };
     pub const SOUTH_EAST: Point = Point { x: 1, y: 1 };
-
-    //pub fn from(t0: isize, t1: isize) -> Point {
-    //    return Point { x: t0, y: t1 };
-    //}
 }
