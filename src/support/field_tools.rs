@@ -2,64 +2,13 @@ use crate::support::parse_error::ParseError;
 use std::str::FromStr;
 
 #[derive(Debug, Clone, Default)]
-pub struct NumField {
-    pub field: Vec<Vec<isize>>,
+pub struct Field<T> {
+    pub field: Vec<Vec<T>>,
     pub width: isize,
     pub height: isize,
 }
 
-impl FromStr for NumField {
-    type Err = ParseError;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        if s.is_empty() {
-            return Err(ParseError::NoData);
-        }
-        let data = s.lines();
-        let mut field: Vec<Vec<isize>> = Vec::with_capacity(1000);
-        for line in data {
-            field.push(
-                line.chars()
-                    .map(|c| (c.to_digit(10).unwrap()) as isize)
-                    .collect::<Vec<isize>>(),
-            );
-        }
-
-        let width = field[0].len() as isize;
-        let height = field.len() as isize;
-
-        Ok(Self {
-            field,
-            width,
-            height,
-        })
-    }
-}
-
-impl NumField {
-    pub fn is_in_bounds(&self, point: &Point) -> bool {
-        if (0..self.width).contains(&point.x) && (0..self.height).contains(&point.y) {
-            return true;
-        }
-        false
-    }
-
-    pub fn get_point(&self, point: &Point) -> Option<isize> {
-        if !self.is_in_bounds(&point) {
-            return None;
-        }
-        return Some(self.field[point.y as usize][point.x as usize]);
-    }
-}
-
-#[derive(Debug, Clone, Default)]
-pub struct Field {
-    pub field: Vec<Vec<char>>,
-    pub width: isize,
-    pub height: isize,
-}
-
-impl FromStr for Field {
+impl FromStr for Field<char> {
     type Err = ParseError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
@@ -83,18 +32,55 @@ impl FromStr for Field {
     }
 }
 
-impl Field {
+impl FromStr for Field<u8> {
+    type Err = ParseError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        if s.is_empty() {
+            return Err(ParseError::NoData);
+        }
+        let data = s.lines();
+        let mut field: Vec<Vec<u8>> = Vec::with_capacity(1000);
+        for line in data {
+            field.push(
+                line.chars()
+                    .map(|c| (c.to_digit(10).unwrap()) as u8)
+                    .collect::<Vec<u8>>(),
+            );
+        }
+
+        let width = field[0].len() as isize;
+        let height = field.len() as isize;
+
+        Ok(Self {
+            field,
+            width,
+            height,
+        })
+    }
+}
+
+impl<T: core::marker::Copy + std::fmt::Display> Field<T> {
     pub fn is_in_bounds(&self, point: &Point) -> bool {
         if (0..self.width).contains(&point.x) && (0..self.height).contains(&point.y) {
             return true;
         }
         false
     }
-    pub fn get_point(&self, point: &Point) -> Option<char> {
+    pub fn get_point(&self, point: &Point) -> Option<T> {
         if !self.is_in_bounds(&point) {
             return None;
         }
         return Some(self.field[point.y as usize][point.x as usize]);
+    }
+    pub fn print(&self) {
+        for line in &self.field {
+            for c in line {
+                print!("{c}");
+            }
+            println!("");
+        }
+        println!()
     }
 }
 

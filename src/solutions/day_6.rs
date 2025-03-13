@@ -32,7 +32,7 @@ impl InputData {
 
 #[derive(Debug, Clone, Default)]
 struct Lab {
-    floorplan: Field,
+    floorplan: Field<char>,
     guard: Guard,
     path_map: Vec<Point>,
 }

@@ -22,7 +22,7 @@ impl InputData {
 }
 
 struct AntennaMap {
-    field: Field,
+    field: Field<char>,
     antennas: Vec<Vec<Point>>, // not using a HashMap because theyre slow as fuck
                                // indexing on ASCII values is much faster
 }

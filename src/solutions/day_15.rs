@@ -1,4 +1,6 @@
-use std::time::Instant;
+use std::{collections::VecDeque, time::Instant};
+
+use crate::support::field_tools::{Field, Point};
 
 #[derive(Debug, Clone)]
 struct InputData {
@@ -6,25 +8,57 @@ struct InputData {
 }
 
 impl InputData {
-    fn parse_part_1(&self) {
-        let mut field_string: String = String::default();
-        let mut directions = "placeholder";
+    fn parse_part_1(&self) -> WareHouse {
+        let mut field = Field::default();
+        let mut directions = VecDeque::new();
+        let mut position = Point::default();
+
         for line in self.input.lines() {
+            if line.is_empty() {
+                continue;
+            }
             match &line[0..1] {
-                "#" => field_string.push_str(line),
-                "<" | ">" | "v" | "^" => directions = line,
+                "#" => field.field.push(line.chars().collect::<Vec<char>>()),
+                "<" | ">" | "v" | "^" => directions = line.chars().collect::<VecDeque<char>>(),
                 _ => continue,
             }
         }
 
-        for line in field_string.lines() {
-            println!("{}", line);
+        field.width = field.field[0].len() as isize;
+        field.height = field.field.len() as isize;
+
+        // find robot
+        'outer: for (idy, line) in field.field.iter().enumerate() {
+            for (idx, c) in line.iter().enumerate() {
+                if *c == '@' {
+                    position = Point::from((idx, idy));
+                    break 'outer;
+                }
+            }
         }
-        println!("");
-        println!("{}", directions);
+
+        WareHouse {
+            floor: field,
+            robot: Robot {
+                position,
+                move_list: directions,
+            },
+        }
     }
 
     fn parse_part_2(&self) {}
+}
+
+#[derive(Debug, Clone, Default)]
+struct WareHouse {
+    floor: Field<char>,
+    robot: Robot,
+}
+
+#[derive(Debug, Clone, Default)]
+struct Robot {
+    position: Point,
+    move_list: VecDeque<char>,
 }
 
 fn part_1(input: &InputData) {

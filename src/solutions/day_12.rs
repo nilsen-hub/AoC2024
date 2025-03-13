@@ -23,7 +23,7 @@ impl InputData {
 #[derive(Debug, Clone, Default)]
 struct Farm {
     regions: Vec<Region>,
-    field: Field,
+    field: Field<char>,
     mapped: HashSet<Point>,
     directions: [Point; 4],
 }

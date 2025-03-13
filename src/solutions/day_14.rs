@@ -7,7 +7,7 @@ use std::time::Instant;
 #[derive(Debug, Clone, Default)]
 struct Display {
     robots: Vec<Robot>,
-    screen: Field,
+    screen: Field<char>,
     possible_tree: bool,
     line_to_check: usize,
     room_size: Point,

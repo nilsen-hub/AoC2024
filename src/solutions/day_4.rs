@@ -38,7 +38,7 @@ impl InputData {
 }
 
 struct PartTwoSolver {
-    field: Field,
+    field: Field<char>,
 }
 
 impl PartTwoSolver {
@@ -91,7 +91,7 @@ impl PartTwoSolver {
 }
 
 struct PartOneSolver {
-    field: Field,
+    field: Field<char>,
     directions: Vec<Point>,
 }
 

@@ -1,4 +1,4 @@
-use crate::support::field_tools::{NumField, Point};
+use crate::support::field_tools::{Field, Point};
 use std::{str::FromStr, time::Instant};
 
 #[derive(Debug, Clone)]
@@ -8,7 +8,7 @@ struct InputData {
 
 impl InputData {
     fn parse(&self) -> TrailMap {
-        let map = NumField::from_str(&self.input).unwrap();
+        let map = Field::from_str(&self.input).unwrap();
         let mut heads = Vec::with_capacity(100);
         let directions = vec![Point::NORTH, Point::EAST, Point::SOUTH, Point::WEST];
         for (idy, line) in map.field.iter().enumerate() {
@@ -28,7 +28,7 @@ impl InputData {
 
 #[derive(Debug, Clone, Default)]
 struct TrailMap {
-    map: NumField,
+    map: Field<u8>,
     heads: Vec<Point>,
     directions: Vec<Point>,
 }
