@@ -67,12 +67,22 @@ impl<T: core::marker::Copy + std::fmt::Display> Field<T> {
         }
         false
     }
+
     pub fn get_point(&self, point: &Point) -> Option<T> {
         if !self.is_in_bounds(&point) {
             return None;
         }
         return Some(self.field[point.y as usize][point.x as usize]);
     }
+
+    pub fn set_point(&mut self, point: &Point, value: &T) -> Option<()> {
+        if !self.is_in_bounds(&point) {
+            return None;
+        }
+        self.field[point.y as usize][point.x as usize] = *value;
+        return Some(());
+    }
+
     pub fn print(&self) {
         for line in &self.field {
             for c in line {

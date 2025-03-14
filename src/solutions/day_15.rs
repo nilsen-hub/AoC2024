@@ -66,13 +66,35 @@ impl WareHouse {
         }
         sum
     }
-    fn do_the_robot(&mut self) {}
-    fn get_moves(
-        &self,
-        dir: &Point,
-        current_tile: &Point,
-        moves: Vec<Point>,
-    ) -> Option<Vec<Point>> {
+    fn do_the_robot(&mut self) {
+        for direction in self.robot.move_list.clone() {
+            let current_tile = self.robot.position;
+            match self.get_moves(&direction, &current_tile, Vec::new()) {
+                Some(mut moves) => {
+                    self.process_moves(&mut moves);
+                }
+                None => continue,
+            }
+        }
+    }
+    fn get_moves(&self, dir: &char, current_tile: &Point, moves: Vec<Point>) -> Option<Vec<Point>> {
+        let mut moves = moves;
+        let next = self.get_next_tile(&dir, current_tile);
+        match self.floor.get_point(&next).unwrap() {
+            '#' => return None,
+            'O' => {
+                moves.push(next);
+                match self.get_moves(&dir, &next, moves) {
+                    Some(moves) => return Some(moves),
+                    None => return None,
+                }
+            }
+            '.' => {
+                moves.push(next);
+                return Some(moves);
+            }
+            _ => panic!("Thats nowhere to be found in this room"),
+        }
     }
     fn get_next_tile(&self, dir: &char, current_tile: &Point) -> Point {
         match *dir {
@@ -83,8 +105,26 @@ impl WareHouse {
             _ => panic!("not a valid character"),
         }
     }
-    fn process_moves() {}
-    fn make_move() {}
+    fn process_moves(&mut self, moves: &mut Vec<Point>) {
+        loop {
+            let to = moves.pop().unwrap();
+            match moves.last() {
+                Some(from) => self.make_move(to, *from),
+                None => {
+                    self.make_move(to, self.robot.position);
+                    self.robot.position = to;
+                    break;
+                }
+            };
+        }
+    }
+    fn make_move(&mut self, to: Point, from: Point) {
+        let temp = self.floor.get_point(&to).unwrap();
+        self.floor
+            .set_point(&to, &self.floor.get_point(&from).unwrap())
+            .unwrap();
+        self.floor.set_point(&from, &temp);
+    }
 }
 #[derive(Debug, Clone, Default)]
 struct Robot {
@@ -94,11 +134,12 @@ struct Robot {
 
 fn part_1(input: &InputData) {
     let now = Instant::now();
-    let mut acc: usize = 0;
+    let mut warehouse = input.parse_part_1();
+    // warehouse.floor.print();
+    warehouse.do_the_robot();
+    // warehouse.floor.print();
 
-    let parsed = input.parse_part_1();
-
-    println!("Part one: {}", acc);
+    println!("Part one: {}", warehouse.sum_gps());
     println!("Runtime (micros): {}", now.elapsed().as_micros());
 }
 
