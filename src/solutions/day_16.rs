@@ -136,6 +136,7 @@ struct Solver {
     maze: Maze,
 }
 impl Solver {
+    //dijkstra approximation
     fn solve_part_1(&mut self) -> usize {
         self.maze.make_graph();
         let mut frontier: BTreeMap<usize, Vec<Node>> = BTreeMap::new();
