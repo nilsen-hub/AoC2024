@@ -48,25 +48,12 @@ struct Computer {
 }
 
 impl Computer {
-    fn cpu_part_1(&mut self) -> String {
+    fn cpu_part_1(&mut self) -> Vec<usize> {
         let mut window: (usize, usize) = (0, 1);
 
         loop {
             if window.0 >= self.program.len() {
-                print!("output: ");
-                let mut val = String::default();
-                for (index, value) in self.output.iter().enumerate() {
-                    if index == 0 {
-                        val = stringify!(value);
-                        continue;
-                    }
-                    if index == self.output.len() - 1 {
-                        val = stringify!(val, value);
-                        return val;
-                    }
-                    val = stringify!(val, value);
-                    print!("{},", value);
-                }
+                break;
             }
             let opcode = self.program[window.0];
             let operand = self.program[window.1];
@@ -90,6 +77,7 @@ impl Computer {
             window.0 += 2;
             window.1 = window.0 + 1;
         }
+        self.output.clone()
     }
     fn op0_adv(&mut self, operand: &usize) {
         // opcode 0
@@ -138,21 +126,136 @@ impl Computer {
             _ => panic!("should never happen"),
         };
     }
+    fn wall(&mut self, a_reg: usize) -> usize {
+        let mut a_reg = a_reg;
+        let mut index = 0;
+
+        'outer: loop {
+            self.reset(a_reg);
+            self.cpu_2();
+
+            if self.program[index] != self.output[index] {
+                index -= 1;
+                loop {
+                    a_reg += 2_usize.pow((index * 3) as u32);
+                    self.reset(a_reg);
+                    self.cpu_2();
+                    if self.program[index] == self.output[index]
+                        && self.program[index + 1] == self.output[index + 1]
+                    {
+                        index = 0;
+                        continue 'outer;
+                    }
+                }
+            }
+            index += 1;
+
+            if index == self.program.len() {
+                break;
+            }
+        }
+
+        return a_reg;
+    }
+    fn reset(&mut self, a_reg: usize) {
+        self.register_a = a_reg;
+        self.register_b = 0;
+        self.register_c = 0;
+        self.output.clear();
+    }
+    fn check_output_equality(&self) -> bool {
+        if self.output.len() != self.program.len() {
+            return false;
+        }
+        for (index, el) in self.program.iter().enumerate() {
+            if *el != self.output[index] {
+                return false;
+            }
+        }
+        return true;
+    }
+    fn find_equal_setting(&mut self) -> usize {
+        let mut current_index: usize = self.program.len() - 1;
+        let mut a_reg = 2_usize.pow((current_index * 3) as u32);
+
+        loop {
+            self.reset(a_reg);
+            self.cpu_2();
+
+            if self.program[current_index] == self.output[current_index] {
+                if current_index == 0 {
+                    if !self.check_output_equality() {
+                        a_reg = self.wall(a_reg);
+                    }
+
+                    return a_reg;
+                }
+                current_index -= 1;
+
+                self.output.clear();
+                continue;
+            }
+            a_reg += 2_usize.pow((current_index * 3) as u32);
+        }
+    }
+    fn cpu_2(&mut self) {
+        let mut window: (usize, usize) = (0, 1);
+
+        loop {
+            if window.0 == self.program.len() {
+                break;
+            }
+
+            let opcode = self.program[window.0];
+            let operand = self.program[window.1];
+
+            match opcode {
+                0 => self.op0_adv(&operand),
+                1 => self.op1_bxl(&operand),
+                2 => self.op2_bst(&operand),
+                3 => {
+                    if self.register_a != 0 {
+                        window.0 = operand;
+                        window.1 = window.0 + 1;
+                        continue;
+                    }
+                }
+                4 => self.op4_bxc(),
+                5 => self.op5_out(&operand),
+                6 => self.op6_bdv(&operand),
+                7 => self.op7_cdv(&operand),
+                _ => panic!("Cpu shit the bed"),
+            }
+
+            window.0 += 2;
+            window.1 = window.0 + 1;
+        }
+    }
 }
 
 fn part_1(input: &InputData) {
     let now = Instant::now();
     let mut computer = input.parse();
+    let solution = computer.cpu_part_1();
 
-    println!("Part one: {}", computer.cpu_part_1());
+    print!("Part one: ");
+    for (index, val) in solution.iter().enumerate() {
+        if index == solution.len() - 1 {
+            print!("{}", val);
+            println!("");
+            break;
+        }
+        print!("{},", val);
+    }
+
     println!("Runtime (micros): {}", now.elapsed().as_micros());
 }
 
 fn part_2(input: &InputData) {
     let now = Instant::now();
-    // let parsed = input.parse_part_2();
+    let mut computer = input.parse();
 
-    //println!("Part two: {}", acc);
+    println!("Part two: {}", computer.find_equal_setting());
     println!("Runtime (micros): {}", now.elapsed().as_micros());
 }
 
@@ -168,11 +271,4 @@ pub fn solution(data: &str) {
     println!("");
     part_2(&input);
     println!("");
-}
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn valid_analysis() {}
 }
