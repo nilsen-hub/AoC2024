@@ -19,6 +19,7 @@ fn main() {
         include_str!(".././data/full/day_13"),
         include_str!(".././data/full/day_14"),
         include_str!(".././data/full/day_15"),
+        include_str!(".././data/full/day_16"),
     ];
 
     clear_terminal();
@@ -81,18 +82,20 @@ fn day_launcher(data: Vec<&str>, day: &str) {
         13 => solutions::day_13::solution(data[day - 1]),
         14 => solutions::day_14::solution(data[day - 1]),
         15 => solutions::day_15::solution(data[day - 1]),
+        16 => solutions::day_16::solution(data[day - 1]),
         _ => println!("{} is unavailable for some reason", day),
     }
     println!("");
 }
 
 fn run_all_days(data: Vec<&str>) {
+    let now = Instant::now();
     let to_send = data.clone();
     for (index, _day) in data.iter().enumerate() {
         day_launcher(to_send.clone(), &(index + 1).to_string());
         println!("");
     }
-
+    println!("Total runtime: {}", now.elapsed().as_secs_f32());
     process::exit(0);
 }
 
