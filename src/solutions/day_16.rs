@@ -317,7 +317,7 @@ fn part_2(input: &InputData) {
     println!("Runtime (micros): {}", now.elapsed().as_secs_f32());
 }
 
-pub fn solution(data: &str) {
+pub fn solution(data: &str, _test_data: &str) {
     let input = InputData {
         input: data.to_string(),
     };

@@ -103,7 +103,7 @@ fn number_cat(left: &usize, right: &usize) -> usize {
     format!("{}{}", left, right).parse().unwrap()
 }
 
-pub fn solution(data: &str) {
+pub fn solution(data: &str, _test_data: &str) {
     let input = InputData {
         input: data.to_string(),
     };

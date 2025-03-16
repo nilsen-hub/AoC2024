@@ -89,7 +89,7 @@ fn find_muls(data: Vec<&str>) -> Vec<(usize, usize)> {
     output
 }
 
-pub fn solution(data: &str) {
+pub fn solution(data: &str, _test_data: &str) {
     let input = InputData {
         input: data.to_string(),
     };

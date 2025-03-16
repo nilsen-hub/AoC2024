@@ -5,7 +5,7 @@ use std::{
     usize, vec,
 };
 
-pub fn solution(data: &str) {
+pub fn solution(data: &str, _test_data: &str) {
     let input = InputData {
         input: data.to_string(),
         capacity: 71,
@@ -21,22 +21,19 @@ pub fn solution(data: &str) {
 }
 
 fn part_1(input: &InputData) {
-    let mut acc = 0;
     let now = Instant::now();
-    let mut ram = input.parse_part_1();
-    ram.solve_part_1();
+    let mut ram = input.parse();
 
-    println!("Part one: {}", acc);
+    println!("Part one: {}", ram.solve_part_1());
     println!("Runtime (micros): {}", now.elapsed().as_micros());
 }
 
 fn part_2(input: &InputData) {
     let now = Instant::now();
-    let mut acc: usize = 0;
+    let mut ram = input.parse();
+    let point = ram.solve_part_2();
 
-    let parsed = input.parse_part_2();
-
-    println!("Part two: {}", acc);
+    println!("Part two: {},{}", point.x, point.y);
     println!("Runtime (micros): {}", now.elapsed().as_micros());
 }
 
@@ -47,7 +44,7 @@ struct InputData {
 }
 
 impl InputData {
-    fn parse_part_1(&self) -> Ram {
+    fn parse(&self) -> Ram {
         let field_line = vec!['.'; self.capacity];
         let memory = vec![field_line; self.capacity];
 
@@ -67,10 +64,9 @@ impl InputData {
             },
             bad_sectors,
             maze: Maze::default(),
+            directions: [Point::NORTH, Point::SOUTH, Point::EAST, Point::WEST],
         }
     }
-
-    fn parse_part_2(&self) {}
 }
 
 #[derive(Debug, Default, Clone)]
@@ -78,53 +74,75 @@ struct Ram {
     memory: Field<char>,
     bad_sectors: Vec<Point>,
     maze: Maze,
+    directions: [Point; 4],
 }
 
 impl Ram {
-    fn solve_part_1(&mut self) {
-        self.fuckup_memory();
+    fn solve_part_1(&mut self) -> usize {
+        self.fuckup_memory(1024);
         self.build_maze();
-        self.test_maze();
+        self.maze.dijkstra()
     }
-    fn fuckup_memory(&mut self) {
-        for index in 0..1024 as usize {
+
+    fn solve_part_2(&mut self) -> Point {
+        let mut lower = 1024;
+        let mut upper = self.bad_sectors.len();
+
+        loop {
+            let check = self.bin_search_number(lower, upper);
+            self.fuckup_memory(check);
+            self.build_maze();
+
+            if self.maze.field_graph.contains_key(&self.maze.end) {
+                lower = check;
+            } else {
+                upper = check;
+            }
+
+            if upper - lower == 1 || upper == lower {
+                return self.bad_sectors[lower];
+            }
+
+            self.reset_memory();
+        }
+    }
+    fn reset_memory(&mut self) {
+        let capacity = self.memory.height as usize;
+        let field_line = vec!['.'; capacity];
+        self.memory.field = vec![field_line; capacity];
+    }
+    fn bin_search_number(&self, lower: usize, upper: usize) -> usize {
+        ((upper - lower) / 2) + lower
+    }
+    fn fuckup_memory(&mut self, amnt: usize) {
+        for index in 0..amnt as usize {
             self.memory.set_point(&self.bad_sectors[index], &'#');
         }
     }
-
     fn build_maze(&mut self) {
         self.maze.field = self.memory.clone();
         self.maze.start = Point::from((0, 0));
         self.maze.end = Point::from((70, 70));
-        self.maze.directions = [Point::NORTH, Point::SOUTH, Point::EAST, Point::WEST];
+        self.maze.directions = self.directions;
+        self.maze.field_graph.clear();
         self.maze.build_graph();
     }
 
-    // debug, test shows it works!!
-    fn test_maze(&self) {
-        let graph = &self.maze.field_graph;
-        let mut field = self.maze.field.clone();
-        for (p, _v) in graph {
-            let point = field.get_point(&p).unwrap();
-            if point != '.' {
-                println!("THIS POINT SUCKS: {:?}", p);
-            }
-            field.set_point(&p, &'O').unwrap();
-        }
-        field.print();
-    }
+    //fn test_maze(&self) {
+    //    let graph = &self.maze.field_graph;
+    //    let mut field = self.maze.field.clone();
+    //    for (p, _v) in graph {
+    //        let point = field.get_point(&p).unwrap();
+    //        if point != '.' {
+    //            println!("THIS POINT SUCKS: {:?}", p);
+    //        }
+    //        field.set_point(&p, &'O').unwrap();
+    //    }
+    //    field.print();
+    //}
 }
 
-#[derive(Debug, Clone, Copy, Default)]
-enum Direction {
-    #[default]
-    Nort,
-    East,
-    South,
-    West,
-}
-
-#[derive(Debug, Copy, Clone, Default)]
+#[derive(Debug, Clone, Default)]
 struct Node {
     point: Point,
     dist_neigh: usize,
@@ -142,7 +160,6 @@ struct Maze {
 
 impl Maze {
     fn build_graph(&mut self) {
-        println!("building graph");
         let position = self.start;
         let to_explore = self.get_connected_nodes(position);
         self.field_graph.insert(position, to_explore.clone());
@@ -159,7 +176,6 @@ impl Maze {
             }
             let mut nodes = self.get_connected_nodes(node.point);
             self.field_graph.insert(node.point, nodes.clone());
-            // this append is probably ripe for optimization, vec.append is _very_ expensive
             to_explore.append(&mut nodes);
         }
     }
@@ -182,8 +198,9 @@ impl Maze {
 
         nodes
     }
+
     fn dijkstra(&mut self) -> usize {
-        let mut frontier: BTreeMap<usize, Vec<Node>> = BTreeMap::new();
+        let mut frontier = BTreeMap::new();
         let mut visited: HashMap<Point, Node> = HashMap::new();
 
         frontier.insert(
@@ -194,9 +211,32 @@ impl Maze {
                 dist_start: 0,
             }]),
         );
+        loop {
+            let current_nodes = frontier.pop_first().unwrap().1;
+            for node in current_nodes {
+                if let Some(n) = visited.get(&node.point) {
+                    if node.dist_start >= n.dist_start {
+                        continue;
+                    }
+                }
 
-        let current_nodes = frontier.pop_first().unwrap();
-        for node in current_nodes {}
+                let connected_nodes = self.field_graph.get(&node.point).unwrap().clone();
+
+                for mut dest in connected_nodes {
+                    dest.dist_start = node.dist_start + dest.dist_neigh;
+                    if dest.point == self.end {
+                        return dest.dist_start;
+                    }
+
+                    frontier
+                        .entry(dest.dist_start)
+                        .and_modify(|v| v.push(dest.clone()))
+                        .or_insert(vec![dest]);
+                }
+
+                visited.insert(node.point, node);
+            }
+        }
     }
 }
 

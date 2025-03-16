@@ -274,7 +274,7 @@ fn line_checker(line: &Vec<char>) -> bool {
         return true;
     }
 }
-pub fn solution(data: &str) {
+pub fn solution(data: &str, _test_data: &str) {
     let input = InputData {
         input: data.to_string(),
         size: Point::from((101, 103)),

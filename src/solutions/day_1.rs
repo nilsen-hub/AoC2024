@@ -1,6 +1,6 @@
 use std::{collections::HashMap, time::Instant};
 
-pub fn solution(data: &str) {
+pub fn solution(data: &str, _test_data: &str) {
     println!("Day one answers:");
     println!("");
 

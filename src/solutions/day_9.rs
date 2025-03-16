@@ -255,7 +255,7 @@ fn build_gap(size: char) -> Gap {
     Gap { size, start_index }
 }
 
-pub fn solution(data: &str) {
+pub fn solution(data: &str, _test_data: &str) {
     let input = InputData {
         input: data.to_string(),
     };
