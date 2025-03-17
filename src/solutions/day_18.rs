@@ -99,7 +99,7 @@ impl Ram {
                 upper = check;
             }
 
-            if upper - lower == 1 || upper == lower {
+            if upper - lower <= 1 {
                 return self.bad_sectors[lower];
             }
 
@@ -238,12 +238,4 @@ impl Maze {
             }
         }
     }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn valid_analysis() {}
 }

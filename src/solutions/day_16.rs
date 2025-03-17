@@ -314,7 +314,7 @@ fn part_2(input: &InputData) {
     let mut solver = input.parse();
 
     println!("Part two: {}", solver.solve_part_2());
-    println!("Runtime (micros): {}", now.elapsed().as_secs_f32());
+    println!("Runtime (seconds): {}", now.elapsed().as_secs_f32());
 }
 
 pub fn solution(data: &str, _test_data: &str) {
