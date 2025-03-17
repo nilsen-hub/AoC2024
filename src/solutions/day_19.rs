@@ -1,4 +1,4 @@
-use std::time::Instant;
+use std::{collections::HashMap, time::Instant};
 
 #[derive(Debug, Clone)]
 struct InputData {
@@ -18,7 +18,12 @@ impl InputData {
                     .collect::<Vec<String>>();
 
                 for pattern in patterns {
-                    towel_constructor.patterns.push(pattern.chars().collect());
+                    let pattern = pattern.chars().collect::<Vec<char>>();
+                    towel_constructor
+                        .patterns
+                        .entry(pattern[0].clone())
+                        .and_modify(|v| v.push(pattern.clone()))
+                        .or_insert(vec![pattern]);
                 }
                 continue;
             }
@@ -35,7 +40,7 @@ impl InputData {
 }
 #[derive(Debug, Default, Clone)]
 struct TowelConstructor {
-    patterns: Vec<Vec<char>>,
+    patterns: HashMap<char, Vec<Vec<char>>>,
     designs: Vec<Vec<char>>,
 }
 
@@ -61,8 +66,7 @@ impl TowelConstructor {
         acc
     }
     fn sort_patterns(&mut self) {
-        self.patterns.sort_by_key(|k| k.len());
-        self.patterns.reverse();
+        for group in self.patterns.
     }
     fn build_towel(&self, design: Vec<char>, target: Vec<char>, current: Vec<char>) -> bool {
         let patterns = self.patterns.clone();
