@@ -65,10 +65,30 @@ impl TowelConstructor {
         }
         acc
     }
-    fn sort_patterns(&mut self) {
-        for group in self.patterns.
-    }
     fn build_towel(&self, design: Vec<char>, target: Vec<char>, current: Vec<char>) -> bool {
+        let patterns = self.patterns.clone();
+        let mut design = design.clone();
+        let mut current = current.clone();
+        for pattern in patterns {
+            let to_match_iter = design.windows(pattern.len());
+            let to_match = match to_match_iter.clone().next() {
+                Some(v) => v.to_vec(),
+                None => continue,
+            };
+            if pattern == to_match {
+                current.append(&mut pattern.clone());
+                if current == target {
+                    return true;
+                }
+                design.drain(0..pattern.len());
+                if self.build_towel(design.clone(), target.clone(), current.clone()) {
+                    return true;
+                }
+            }
+        }
+        false
+    }
+    fn build_towel_deprec(&self, design: Vec<char>, target: Vec<char>, current: Vec<char>) -> bool {
         let patterns = self.patterns.clone();
         let mut design = design.clone();
         let mut current = current.clone();
