@@ -1,4 +1,4 @@
-use std::{collections::HashMap, time::Instant};
+use std::{collections::HashSet, time::Instant};
 
 #[derive(Debug, Clone)]
 struct InputData {
@@ -6,128 +6,319 @@ struct InputData {
 }
 
 impl InputData {
-    fn parse_part_1(&self) -> TowelConstructor {
-        let mut towel_constructor = TowelConstructor::default();
+    fn parse(&self) -> Towels {
+        let mut towels = Towels::default();
         for (index, line) in self.input.lines().into_iter().enumerate() {
-            if index == 0 {
-                let patterns = line
-                    .split_whitespace()
-                    .collect::<String>()
-                    .split(',')
-                    .map(|s| s.to_string())
-                    .collect::<Vec<String>>();
+            match index {
+                0 => {
+                    let patterns = line
+                        .split_whitespace()
+                        .collect::<String>()
+                        .split(',')
+                        .map(|s| s.chars().collect::<Vec<char>>())
+                        .collect::<Vec<Vec<char>>>();
 
-                for pattern in patterns {
-                    let pattern = pattern.chars().collect::<Vec<char>>();
-                    towel_constructor
-                        .patterns
-                        .entry(pattern[0].clone())
-                        .and_modify(|v| v.push(pattern.clone()))
-                        .or_insert(vec![pattern]);
+                    towels.patterns = Graph::from(patterns);
                 }
-                continue;
+                1 => (),
+                _ => towels.designs.push(line.chars().collect()),
             }
-            if line.is_empty() {
-                continue;
-            }
-            towel_constructor.designs.push(line.chars().collect());
+        }
+        towels
+    }
+}
+
+#[derive(Debug, Clone, Default)]
+struct Graph {
+    edges: Vec<Graph>, // [w, u, b, r, g, x];
+    status: bool,
+}
+
+impl Graph {
+    fn from(data: Vec<Vec<char>>) -> Graph {
+        let mut node = Graph {
+            edges: vec![Graph::default(); 6],
+            status: true,
+        };
+
+        for d in data {
+            node.insert_data(make_vec_usize(&d));
         }
 
-        towel_constructor
+        node
     }
 
-    fn parse_part_2(&self) {}
+    fn insert_data(&mut self, data: Vec<usize>) -> Graph {
+        let mut next = &mut self.edges;
+
+        for d in data {
+            next[d].status = true;
+            if !Graph::node_exists(&next[d]) {
+                next[d].edges = vec![Graph::default(); 6];
+            }
+            next = &mut next[d].edges;
+        }
+
+        next[5].status = true;
+
+        self.clone()
+    }
+
+    fn node_exists(node: &Graph) -> bool {
+        match node.edges.get(5) {
+            Some(_n) => return true,
+            None => return false,
+        }
+    }
+    // debug / test- function
+    fn print_data(
+        &self,
+        current: &Graph,
+        to_print: Vec<char>,
+        //collector: &mut Vec<Vec<char>>,
+    ) {
+        // debug: -> Vec<Vec<char>>
+        for (index, node) in current.edges.iter().enumerate() {
+            if node.status {
+                let mut to_print = to_print.clone();
+                if index != 5 {
+                    to_print.push(convert_index(&index));
+                }
+
+                match node.edges.get(5) {
+                    Some(n) => {
+                        if n.status {
+                            //collector.push(to_print.clone());
+                            println!("{:?}", &to_print);
+                        }
+                    }
+                    None => (),
+                }
+
+                self.print_data(&node, to_print); // , to_print, collector
+            }
+        }
+
+        //collector.clone()
+    }
 }
 #[derive(Debug, Default, Clone)]
-struct TowelConstructor {
-    patterns: HashMap<char, Vec<Vec<char>>>,
+struct Towels {
+    // for dubug:
+    //debug_set: HashSet<Vec<char>>,
+    patterns: Graph,
     designs: Vec<Vec<char>>,
 }
 
-impl TowelConstructor {
-    fn solve_part_1(&mut self) -> usize {
+impl Towels {
+    fn solve_part_1(&self) -> usize {
         let mut acc = 0;
-        let mut counter = 1;
-        self.sort_patterns();
-        self.designs.reverse();
-        loop {
-            let design = match self.designs.pop() {
-                Some(d) => d,
-                None => break,
-            };
-            if self.build_towel(design.clone(), design.clone(), Vec::new()) {
+        for design in &self.designs {
+            if self.towel_check_lazy(&make_vec_usize(&design)) {
                 acc += 1;
-                println!("POSSIBLE design: {}", counter);
-            } else {
-                println!("NOT POSSIBLE design: {}", counter);
             }
-            counter += 1;
         }
         acc
     }
-    fn build_towel(&self, design: Vec<char>, target: Vec<char>, current: Vec<char>) -> bool {
-        let patterns = self.patterns.clone();
-        let mut design = design.clone();
-        let mut current = current.clone();
-        for pattern in patterns {
-            let to_match_iter = design.windows(pattern.len());
-            let to_match = match to_match_iter.clone().next() {
-                Some(v) => v.to_vec(),
-                None => continue,
-            };
-            if pattern == to_match {
-                current.append(&mut pattern.clone());
-                if current == target {
-                    return true;
-                }
-                design.drain(0..pattern.len());
-                if self.build_towel(design.clone(), target.clone(), current.clone()) {
-                    return true;
-                }
-            }
+    fn solve_part_2(&self) -> u32 {
+        let mut acc = 0;
+        for design in &self.designs {
+            acc += self.towel_check_complete(&make_vec_usize(&design));
         }
-        false
+        acc
     }
-    fn build_towel_deprec(&self, design: Vec<char>, target: Vec<char>, current: Vec<char>) -> bool {
-        let patterns = self.patterns.clone();
-        let mut design = design.clone();
-        let mut current = current.clone();
-        for pattern in patterns {
-            let to_match_iter = design.windows(pattern.len());
-            let to_match = match to_match_iter.clone().next() {
-                Some(v) => v.to_vec(),
-                None => continue,
-            };
-            if pattern == to_match {
-                current.append(&mut pattern.clone());
-                if current == target {
-                    return true;
-                }
-                design.drain(0..pattern.len());
-                if self.build_towel(design.clone(), target.clone(), current.clone()) {
-                    return true;
+    fn towel_check_complete(&self, target: &Vec<usize>) -> u32 {
+        let mut acc = 0;
+        let mut index = 0;
+        let mut graph_history: Vec<usize> = Vec::new();
+        let mut current_graph = &self.patterns.edges;
+        let mut graph_history_seen: HashSet<usize> = HashSet::new();
+        loop {
+            if index == target.len() {
+                match current_graph.get(5) {
+                    Some(v) => {
+                        if v.status {
+                            acc += 1;
+                            index = 0;
+                            current_graph = &self.patterns.edges;
+                        } else {
+                            match graph_history.pop() {
+                                Some(v) => {
+                                    graph_history_seen.insert(v);
+                                    index = v;
+                                    current_graph = &self.patterns.edges;
+                                }
+                                None => return acc,
+                            }
+                        }
+                    }
+                    None => match graph_history.pop() {
+                        Some(v) => {
+                            graph_history_seen.insert(v);
+                            index = v;
+                            current_graph = &self.patterns.edges;
+                        }
+                        None => return acc,
+                    },
                 }
             }
+
+            if current_graph[target[index]].status {
+                current_graph = &current_graph[target[index]].edges;
+                index += 1;
+                match current_graph.get(5) {
+                    Some(v) => {
+                        if v.status {
+                            if !graph_history_seen.contains(&index) {
+                                graph_history.push(index);
+                            }
+                        }
+                    }
+                    None => (),
+                }
+                continue;
+            }
+
+            if !current_graph[5].status {
+                match graph_history.pop() {
+                    Some(v) => {
+                        graph_history_seen.insert(v);
+                        index = v;
+                        current_graph = &self.patterns.edges;
+                        continue;
+                    }
+                    None => return acc,
+                }
+            } else {
+                current_graph = &self.patterns.edges;
+            }
         }
-        false
+    }
+
+    fn towel_check_lazy(&self, target: &Vec<usize>) -> bool {
+        let mut index = 0;
+        let mut graph_history: Vec<usize> = Vec::new();
+        let mut current_graph = &self.patterns.edges;
+        let mut graph_history_seen: HashSet<usize> = HashSet::new();
+        loop {
+            if index == target.len() {
+                match current_graph.get(5) {
+                    Some(v) => {
+                        if v.status {
+                            return true;
+                        } else {
+                            match graph_history.pop() {
+                                Some(v) => {
+                                    graph_history_seen.insert(v);
+                                    index = v;
+                                    current_graph = &self.patterns.edges;
+                                }
+                                None => return false,
+                            }
+                        }
+                    }
+                    None => match graph_history.pop() {
+                        Some(v) => {
+                            graph_history_seen.insert(v);
+                            index = v;
+                            current_graph = &self.patterns.edges;
+                        }
+                        None => return false,
+                    },
+                }
+            }
+
+            if current_graph[target[index]].status {
+                current_graph = &current_graph[target[index]].edges;
+                index += 1;
+                match current_graph.get(5) {
+                    Some(v) => {
+                        if v.status {
+                            if !graph_history_seen.contains(&index) {
+                                graph_history.push(index);
+                            }
+                        }
+                    }
+                    None => (),
+                }
+                continue;
+            }
+
+            if !current_graph[5].status {
+                match graph_history.pop() {
+                    Some(v) => {
+                        graph_history_seen.insert(v);
+                        index = v;
+                        current_graph = &self.patterns.edges;
+                        continue;
+                    }
+                    None => return false,
+                }
+            } else {
+                current_graph = &self.patterns.edges;
+            }
+        }
     }
 }
+
+fn test_graph_completeness(graph_output: Vec<Vec<char>>, mut graph_input: HashSet<Vec<char>>) {
+    println!(
+        "collector len, input len: {}, {}",
+        graph_output.len(),
+        graph_input.len()
+    );
+    for line in graph_output {
+        if graph_input.remove(&line) {
+            println!("present in both sets: {:?}", line);
+        } else {
+            println!("phantom vector: {:?}", line);
+        }
+    }
+    println!("Should be zero: {}", graph_input.len());
+}
+
+fn make_vec_usize(vec: &Vec<char>) -> Vec<usize> {
+    let mut output = Vec::new();
+    for c in vec {
+        output.push(convert_color(c));
+    }
+    output
+}
+
+fn convert_color(c: &char) -> usize {
+    match c {
+        'w' => 0,
+        'u' => 1,
+        'b' => 2,
+        'r' => 3,
+        'g' => 4,
+        _ => panic!("expected different value"),
+    }
+}
+fn convert_index(i: &usize) -> char {
+    match i {
+        0 => 'w',
+        1 => 'u',
+        2 => 'b',
+        3 => 'r',
+        4 => 'g',
+        _ => panic!("expected different value"),
+    }
+}
+
 fn part_1(input: &InputData) {
     let now = Instant::now();
+    let towels = input.parse();
 
-    let mut towel_constructor = input.parse_part_1();
-
-    println!("Part one: {}", towel_constructor.solve_part_1());
-    println!("Runtime (seconds): {}", now.elapsed().as_secs());
+    println!("Part one: {}", towels.solve_part_1());
+    println!("Runtime (micros): {}", now.elapsed().as_micros());
 }
 
 fn part_2(input: &InputData) {
     let now = Instant::now();
-    let mut acc: usize = 0;
+    let towels = input.parse();
 
-    let parsed = input.parse_part_2();
-
-    println!("Part two: {}", acc);
+    println!("Part two: {}", towels.solve_part_2());
     println!("Runtime (micros): {}", now.elapsed().as_micros());
 }
 
@@ -146,7 +337,7 @@ pub fn solution(data: &str, test_data: &str) {
     //part_1(&test);
     part_1(&input);
     println!("");
-    part_2(&input);
+    part_2(&test);
     println!("");
 }
 #[cfg(test)]
