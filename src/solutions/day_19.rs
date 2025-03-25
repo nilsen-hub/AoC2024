@@ -103,7 +103,7 @@ impl Graph {
 
 #[derive(Debug, Default, Clone, PartialEq, Eq, Hash)]
 struct ForkRecord {
-    index: usize,
+    target: Vec<usize>,
     position: Vec<Graph>,
 }
 
