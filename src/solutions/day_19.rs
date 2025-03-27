@@ -1,4 +1,4 @@
-use std::time::Instant;
+use std::{collections::VecDeque, time::Instant};
 
 #[derive(Debug, Clone)]
 struct InputData {
@@ -114,17 +114,17 @@ impl Towels {
     fn solve_part_1(&self) -> usize {
         let mut acc = 0;
         for design in &self.designs {
-            if self.towel_finder(&make_vec_usize(&design), &self.patterns) {
+            if self.towel_finder(&make_vec_usize(&design), &self.patterns.edges) {
                 acc += 1;
             }
         }
         acc
     }
 
-    fn towel_finder(&self, target: &Vec<usize>, graph: &Graph) -> bool {
+    fn towel_finder(&self, target: &Vec<usize>, graph: &Vec<Graph>) -> bool {
         let mut index = 0;
         let mut graph_history: Vec<usize> = Vec::with_capacity(100);
-        let mut current_graph = &graph.edges;
+        let mut current_graph = graph;
         let mut graph_history_seen: Vec<usize> = Vec::with_capacity(80);
 
         loop {
@@ -168,7 +168,7 @@ impl Towels {
         }
     }
 
-    fn towel_check_bfs(&self, target: &Vec<usize>) -> u32 {
+    fn towel_finder_complete(&self, target: &Vec<usize>) -> u32 {
         // the idea here ties my brain into a knot, but it should be simple enough
         // I take the target, and send it through the towel checker.
         // If its good, I add one to the acc.
@@ -183,15 +183,99 @@ impl Towels {
         // valid, add to to check list, you now have a new path to figure out.
         // I think this will result in an accurate count of the amount of paths avaliable to
         // target.
+        if !self.towel_finder(target, &self.patterns.edges) {
+            return 0;
+        }
+        let mut acc = 1;
+        use ValidPaths as P;
+        let mut graph = &self.patterns.edges[target[0]].edges;
+        let mut target: Vec<usize> = target.clone().drain(1..).collect();
+        let mut forks: VecDeque<Vec<usize>> = VecDeque::with_capacity(100);
 
-        0
+        loop {
+            if target.is_empty() {
+                match forks.pop_back() {
+                    Some(mut r) => {
+                        if target.len() == 0 {
+                            continue;
+                        }
+                        graph = &self.patterns.edges[target[0]].edges;
+                        target = r.drain(1..).collect();
+                    }
+                    None => return acc,
+                }
+            }
+            match self.fork_detector(graph, &target) {
+                P::Both => {
+                    println!("fork detected! target len: {}", target.len());
+                    acc += 1;
+                    forks.push_back(target.clone());
+                    graph = &graph[target[0]].edges;
+                    target = target.drain(1..).collect();
+                }
+                P::Retur => {
+                    println!("no fork here (return) target len: {}", target.len());
+                    graph = &self.patterns.edges;
+                    if target.len() == 0 {
+                        continue;
+                    }
+                }
+                P::Ahead => {
+                    println!("no fork here (ahead) target len: {}", target.len());
+                    graph = &graph[target[0]].edges;
+                    target = target.drain(1..).collect();
+                    if target.len() == 0 {
+                        continue;
+                    }
+                }
+            }
+        }
+    }
+
+    // The fork detector checks if both ahead and return path results in a valid towel.
+    // if only one path is true
+    fn fork_detector(&self, graph: &Vec<Graph>, target: &Vec<usize>) -> ValidPaths {
+        let mut ahead = false;
+        let mut retur = false;
+        //let target: Vec<usize> = target.clone().drain(1..).collect();
+        //if target.len() == 0 {
+        //    return ValidPaths::None;
+        //}
+        //if graph.len() == 0 {
+        //    return ValidPaths::None;
+        //}
+        if graph[5].status {
+            retur = self.towel_finder(&target, &self.patterns.edges);
+        }
+
+        if graph[target[0]].status {
+            ahead = self.towel_finder(&target, &graph[target[0]].edges);
+        }
+
+        if retur && ahead {
+            return ValidPaths::Both;
+        }
+        if retur {
+            return ValidPaths::Retur;
+        }
+
+        return ValidPaths::Ahead;
+    }
+
+    fn solve_part_2(&self) -> u32 {
+        let mut acc = 0;
+        for (index, design) in self.designs.iter().enumerate() {
+            println!("Checking design {}", index + 1);
+            acc += self.towel_finder_complete(&make_vec_usize(design));
+        }
+        acc
     }
 }
 
-#[derive(Debug, Default, Clone)]
-struct ForkRecord {
-    target: Vec<usize>,
-    position: Vec<Graph>,
+enum ValidPaths {
+    Ahead,
+    Retur,
+    Both,
 }
 
 fn make_vec_usize(vec: &Vec<char>) -> Vec<usize> {
@@ -225,7 +309,7 @@ fn part_2(input: &InputData) {
     let now = Instant::now();
     let towels = input.parse();
 
-    //println!("Part two: {}", towels.solve_part_2());
+    println!("Part two: {}", towels.solve_part_2());
     println!("Runtime (micros): {}", now.elapsed().as_micros());
 }
 
@@ -243,7 +327,7 @@ pub fn solution(data: &str, test_data: &str) {
 
     part_1(&input);
     println!("");
-    part_2(&input);
+    part_2(&test);
     println!("");
 }
 
