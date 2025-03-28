@@ -1,4 +1,7 @@
-use std::{collections::VecDeque, time::Instant};
+use std::{
+    collections::{HashSet, VecDeque},
+    time::Instant,
+};
 
 #[derive(Debug, Clone)]
 struct InputData {
@@ -28,7 +31,7 @@ impl InputData {
     }
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, Hash)]
 struct Graph {
     edges: Vec<Graph>, // [w, u, b, r, g, x];
     status: bool,
@@ -188,41 +191,54 @@ impl Towels {
         }
         let mut acc = 1;
         use ValidPaths as P;
-        let mut graph = &self.patterns.edges[target[0]].edges;
+        let mut graph = self.patterns.edges[target[0]].clone();
         let mut target: Vec<usize> = target.clone().drain(1..).collect();
         let mut forks: VecDeque<Vec<usize>> = VecDeque::with_capacity(100);
+        let mut checked_forks: HashSet<ForkRecord> = HashSet::new();
 
         loop {
-            if target.is_empty() {
+            if target.is_empty() || graph.edges.is_empty() {
                 match forks.pop_back() {
-                    Some(mut r) => {
-                        if target.len() == 0 {
+                    Some(r) => {
+                        //println!("popped fork: {:?}", r);
+                        if r.len() == 0 {
                             continue;
                         }
-                        graph = &self.patterns.edges[target[0]].edges;
-                        target = r.drain(1..).collect();
+                        graph = self.patterns.clone();
+                        target = r;
                     }
                     None => return acc,
                 }
             }
-            match self.fork_detector(graph, &target) {
+            match self.fork_detector(&graph.edges, &target) {
                 P::Both => {
-                    println!("fork detected! target len: {}", target.len());
+                    //println!("fork detected! target len: {}", target.len());
                     acc += 1;
-                    forks.push_back(target.clone());
-                    graph = &graph[target[0]].edges;
+                    //println!("acc: {}", acc);
+                    //println!("target: {:?}", target);
+                    let record = ForkRecord {
+                        graph: graph.clone(),
+                        target: target.clone(),
+                    };
+                    if !checked_forks.contains(&record) {
+                        checked_forks.insert(record);
+                        forks.push_back(target.clone());
+                    }
+
+                    graph = graph.edges[target[0]].clone();
                     target = target.drain(1..).collect();
                 }
                 P::Retur => {
-                    println!("no fork here (return) target len: {}", target.len());
-                    graph = &self.patterns.edges;
+                    //println!("no fork here (return) target len: {}", target.len());
+                    graph = self.patterns.edges[target[0]].clone();
+                    target = target.drain(1..).collect();
                     if target.len() == 0 {
                         continue;
                     }
                 }
                 P::Ahead => {
-                    println!("no fork here (ahead) target len: {}", target.len());
-                    graph = &graph[target[0]].edges;
+                    //println!("no fork here (ahead) target len: {}", target.len());
+                    graph = graph.edges[target[0]].clone();
                     target = target.drain(1..).collect();
                     if target.len() == 0 {
                         continue;
@@ -237,13 +253,7 @@ impl Towels {
     fn fork_detector(&self, graph: &Vec<Graph>, target: &Vec<usize>) -> ValidPaths {
         let mut ahead = false;
         let mut retur = false;
-        //let target: Vec<usize> = target.clone().drain(1..).collect();
-        //if target.len() == 0 {
-        //    return ValidPaths::None;
-        //}
-        //if graph.len() == 0 {
-        //    return ValidPaths::None;
-        //}
+        //println!("target: {:?}", target);
         if graph[5].status {
             retur = self.towel_finder(&target, &self.patterns.edges);
         }
@@ -265,7 +275,7 @@ impl Towels {
     fn solve_part_2(&self) -> u32 {
         let mut acc = 0;
         for (index, design) in self.designs.iter().enumerate() {
-            println!("Checking design {}", index + 1);
+            //println!("Checking design {}", index + 1);
             acc += self.towel_finder_complete(&make_vec_usize(design));
         }
         acc
@@ -276,6 +286,11 @@ enum ValidPaths {
     Ahead,
     Retur,
     Both,
+}
+#[derive(Debug, Clone, Default, PartialEq, Eq, Hash)]
+struct ForkRecord {
+    graph: Graph,
+    target: Vec<usize>,
 }
 
 fn make_vec_usize(vec: &Vec<char>) -> Vec<usize> {
