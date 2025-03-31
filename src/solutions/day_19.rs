@@ -66,10 +66,10 @@ impl Graph {
     }
 
     fn node_exists(node: &Graph) -> bool {
-        match node.edges.get(5) {
-            Some(_n) => return true,
-            None => return false,
+        if node.edges.is_empty() {
+            return false;
         }
+        true
     }
 
     // debug / test- function
@@ -124,7 +124,7 @@ impl Towels {
         acc
     }
 
-    fn towel_finder(&self, target: &Vec<usize>, graph: &Vec<Graph>) -> bool {
+    fn towel_finder(&self, target: &VecDeque<usize>, graph: &Vec<Graph>) -> bool {
         let mut index = 0;
         let mut graph_history: Vec<usize> = Vec::with_capacity(100);
         let mut current_graph = graph;
@@ -171,100 +171,21 @@ impl Towels {
         }
     }
 
-    fn towel_finder_complete(&self, target: &Vec<usize>) -> usize {
-        // the idea here ties my brain into a knot, but it should be simple enough
-        // I take the target, and send it through the towel checker.
-        // If its good, I add one to the acc.
-        // I then descend one level into the graph, remove the now covered value
-        // from the target.
-        // Then I check the next one. first I check which way the original went.
-        // If the target[0] box in the graph is false, I know it had to jump to
-        // the top, so I will do this aswell. If the target[0] box is true, I check if
-        // its valid, if it is, I know that this was the path taken. And then I check if
-        // jumping up is true, if it is, I add this graph and target to the to check list.
-        // Summed up: If no fork, contiue down, if fork, check validity of looping back. If
-        // valid, add to to check list, you now have a new path to figure out.
-        // I think this will result in an accurate count of the amount of paths avaliable to
-        // target.
-        if !self.towel_finder(target, &self.patterns.edges) {
-            return 0;
+    fn towel_finder_complete(&self, target: Vec<usize>) -> Option<Vec<ValidPaths>> {
+        if !self.towel_finder(&target, &self.patterns.edges) {
+            return None;
         }
-        let mut acc = 1;
-        use ValidPaths as P;
-        let mut graph = self.patterns.edges[target[0]].clone();
-        let mut target: Vec<usize> = target.clone().drain(1..).collect();
-        let mut forks: VecDeque<Vec<usize>> = VecDeque::with_capacity(100);
-        let mut checked_forks: Vec<ForkRecord> = Vec::new();
-        let mut forks_popped = 0;
 
+        let mut target: VecDeque<usize> = target.clone().into_iter().collect::<VecDeque<usize>>();
+        let mut graph = self.patterns.edges.clone();
+        let mut path: Vec<ValidPaths> = Vec::new();
         loop {
-            //println!("forks len: {}", forks.len());
-            if target.is_empty() || graph.edges.is_empty() {
-                match forks.pop_back() {
-                    Some(mut r) => {
-                        //println!("popped fork: {:?}", r);
-                        if r.len() == 0 {
-                            continue;
-                        }
-                        forks_popped += 1;
-                        if forks_popped % 1000000 == 0 {
-                            println!("forks popped: {}", forks_popped);
-                        }
-                        graph = self.patterns.edges[r[0]].clone();
-                        target = r.drain(1..).collect();
-                        if graph.edges.is_empty() || target.is_empty() {
-                            continue;
-                        }
-                    }
-                    None => {
-                        for el in checked_forks {
-                            println!("{:?}", el.target);
-                        }
-                        return acc;
-                    }
-                }
-            }
-
-            match self.fork_detector(&graph.edges, &target) {
-                P::Both => {
-                    acc += 1;
-                    if acc % 1000000 == 0 {
-                        println!("{}", acc);
-                    }
-
-                    if !target.is_empty() {
-                        // && !checked_forks.contains(&r)
-                        //println!("target: {:?}", target);
-                        forks.push_back(target.clone());
-                        //checked_forks.push(r);
-                    }
-
-                    graph = graph.edges[target[0]].clone();
-                    target = target.drain(1..).collect();
-                }
-                P::Retur => {
-                    //println!("no fork here (return) target len: {}", target.len());
-                    graph = self.patterns.edges[target[0]].clone();
-                    target = target.drain(1..).collect();
-                    if target.len() == 0 {
-                        continue;
-                    }
-                }
-                P::Ahead => {
-                    //println!("no fork here (ahead) target len: {}", target.len());
-                    graph = graph.edges[target[0]].clone();
-                    target = target.drain(1..).collect();
-                    if target.len() == 0 {
-                        continue;
-                    }
-                }
-            }
+            let dir = self.fork_detector(&graph, target)
         }
     }
-
     // The fork detector checks if both ahead and return path results in a valid towel.
     // if only one path is true
-    fn fork_detector(&self, graph: &Vec<Graph>, target: &Vec<usize>) -> ValidPaths {
+    fn fork_detector(&self, graph: &Vec<Graph>, target: &VecDeque<usize>) -> ValidPaths {
         let mut ahead = false;
         let mut retur = false;
 
