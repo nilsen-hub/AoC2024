@@ -124,7 +124,7 @@ impl Towels {
         acc
     }
 
-    fn towel_finder(&self, target: &VecDeque<usize>, graph: &Vec<Graph>) -> bool {
+    fn towel_finder(&self, target: &Vec<usize>, graph: &Vec<Graph>) -> bool {
         let mut index = 0;
         let mut graph_history: Vec<usize> = Vec::with_capacity(100);
         let mut current_graph = graph;
@@ -179,13 +179,11 @@ impl Towels {
         let mut target: VecDeque<usize> = target.clone().into_iter().collect::<VecDeque<usize>>();
         let mut graph = self.patterns.edges.clone();
         let mut path: Vec<ValidPaths> = Vec::new();
-        loop {
-            let dir = self.fork_detector(&graph, target)
-        }
+        loop {}
     }
     // The fork detector checks if both ahead and return path results in a valid towel.
     // if only one path is true
-    fn fork_detector(&self, graph: &Vec<Graph>, target: &VecDeque<usize>) -> ValidPaths {
+    fn fork_detector(&self, graph: &Vec<Graph>, target: &Vec<usize>) -> ValidPaths {
         let mut ahead = false;
         let mut retur = false;
 
@@ -207,14 +205,14 @@ impl Towels {
         return ValidPaths::Ahead;
     }
 
-    fn solve_part_2(&self) -> usize {
-        let mut acc = 0;
-        for (index, design) in self.designs.iter().enumerate() {
-            println!("Checking design {}", index + 1);
-            acc += self.towel_finder_complete(&make_vec_usize(design));
-        }
-        acc
-    }
+    //fn solve_part_2(&self) -> usize {
+    //    let mut acc = 0;
+    //    for (index, design) in self.designs.iter().enumerate() {
+    //        println!("Checking design {}", index + 1);
+    //        acc += self.towel_finder_complete(&make_vec_usize(design));
+    //    }
+    //    acc
+    //}
 }
 
 enum ValidPaths {
@@ -257,9 +255,9 @@ fn part_1(input: &InputData) {
 
 fn part_2(input: &InputData) {
     let now = Instant::now();
-    let towels = input.parse();
+    //let towels = input.parse();
 
-    println!("Part two: {}", towels.solve_part_2());
+    //println!("Part two: {}", towels.solve_part_2());
     println!("Runtime (micros): {}", now.elapsed().as_micros());
 }
 
