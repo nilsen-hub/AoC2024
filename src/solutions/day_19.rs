@@ -15,9 +15,7 @@ impl InputData {
             match index {
                 0 => {
                     let patterns = line
-                        .split_whitespace()
-                        .collect::<String>()
-                        .split(',')
+                        .split(", ")
                         .map(|s| s.chars().collect::<Vec<char>>())
                         .collect::<Vec<Vec<char>>>();
 
